@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Shield shape with gradient -->
+    <path android:pathData="M54,20L30,30L30,55C30,70 40,82 54,88C68,82 78,70 78,55L78,30L54,20Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="78"
+                android:endY="88"
+                android:startX="30"
+                android:startY="20"
+                android:type="linear">
+                <item
+                    android:color="#FFFFFF"
+                    android:offset="0.0" />
+                <item
+                    android:color="#FFFFFF"
+                    android:offset="0.5" />
+                <item
+                    android:color="#F5F5F5"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    
+    <!-- Shield border in orange -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F47C4F"
+        android:strokeWidth="3"
+        android:pathData="M54,20L30,30L30,55C30,70 40,82 54,88C68,82 78,70 78,55L78,30L54,20Z" />
+    
+    <!-- Shield checkmark icon -->
+    <path
+        android:fillColor="#F47C4F"
+        android:pathData="M48,55L42,49L40,51L48,59L68,39L66,37L48,55Z" />
+    
+    <!-- Decorative elements -->
+    <path
+        android:fillColor="#F06A30"
+        android:pathData="M40,45L44,45L44,47L40,47Z" />
+    <path
+        android:fillColor="#F06A30"
+        android:pathData="M64,45L68,45L68,47L64,47Z" />
+</vector>
