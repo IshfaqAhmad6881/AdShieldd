@@ -19,10 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.res.stringResource
+import com.FusionCoreTech.myapplication.R
 import com.FusionCoreTech.myapplication.ui.theme.OrangePrimary
 import com.FusionCoreTech.myapplication.ui.theme.PremiumOrange
-import com.FusionCoreTech.myapplication.ui.theme.BackgroundGrey
-import com.FusionCoreTech.myapplication.ui.theme.DarkBackgroundGrey
+import com.FusionCoreTech.myapplication.ui.theme.adShieldScreenBackgroundBrush
 
 @Composable
 fun SplashScreen(
@@ -130,25 +131,12 @@ fun SplashScreen(
 
     // Splash screen uses system theme initially, but can accept dark mode parameter
     val isDarkMode = isSystemInDarkTheme()
-    val bgColor = if (isDarkMode) DarkBackgroundGrey else BackgroundGrey
-    val lightColor = if (isDarkMode) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
-    val darkColor = if (isDarkMode) Color(0xFF0A0A0A) else Color(0xFFD0D0D0)
     val taglineColor = if (isDarkMode) Color(0xFFB0B0B0) else Color(0xFF666666)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        lightColor,
-                        bgColor,
-                        darkColor
-                    ),
-                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
-                )
-            ),
+            .background(adShieldScreenBackgroundBrush(isDarkMode)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -231,7 +219,7 @@ fun SplashScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "AdShield",
+                    text = stringResource(R.string.app_name),
                     fontSize = 36.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = OrangePrimary,
@@ -242,7 +230,7 @@ fun SplashScreen(
                 )
                 
                 Text(
-                    text = "Protect Your Privacy",
+                    text = stringResource(R.string.splash_tagline),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     color = taglineColor,

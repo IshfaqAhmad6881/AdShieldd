@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
-//dev_ishfaq
+
 android {
     namespace = "com.FusionCoreTech.myapplication"
     compileSdk {
@@ -42,12 +42,15 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("com.google.android.gms:play-services-ads:23.6.0")
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
+    implementation("com.google.android.gms:play-services-ads:25.0.0")
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.compose.remote.creation.core)
     testImplementation(libs.junit)

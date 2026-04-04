@@ -19,15 +19,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.FusionCoreTech.myapplication.R
+import com.FusionCoreTech.myapplication.dns.CustomDnsPrefs
 import com.FusionCoreTech.myapplication.model.Location
+import com.FusionCoreTech.myapplication.ui.theme.BackgroundGrey
+import com.FusionCoreTech.myapplication.ui.theme.DarkBackgroundGrey
 import com.FusionCoreTech.myapplication.ui.theme.PremiumOrange
 
-/** Ad-blocking DNS servers (Open DNS and others that block ads). */
+/** DNS servers (default app choice: AdGuard DNS — see [com.FusionCoreTech.myapplication.dns.SelectedDnsPrefs]). */
 val DNS_SERVER_OPTIONS: List<Location> = listOf(
-    Location(name = "Open DNS"),
     Location(name = "AdGuard DNS"),
+    Location(name = "Open DNS"),
     Location(name = "Cloudflare DNS"),
+    Location(name = "Google DNS"),
     Location(name = "Quad9"),
+    Location(name = "Alternate DNS"),
+    Location(name = "Level3 DNS"),
+    Location(name = "SafeDNS"),
+    Location(name = "Yandex DNS"),
+    Location(name = "Comodo Secure DNS"),
+    Location(name = "DNS.Watch"),
+    Location(name = "UncensoredDNS"),
     Location(name = "NextDNS"),
     Location(name = "CleanBrowsing"),
 )
@@ -38,9 +52,10 @@ fun ChooseServerSheet(
     selectedLocation: Location,
     isDarkMode: Boolean,
     onSelect: (Location) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onCustomDnsClick: () -> Unit = {}
 ) {
-    val sheetBackground = if (isDarkMode) Color(0xFF1E1E1E) else Color(0xFFF5F5F5)
+    val sheetBackground = if (isDarkMode) DarkBackgroundGrey else BackgroundGrey
     val contentBg = if (isDarkMode) Color(0xFF2C2C2C) else Color.White
     val textDark = if (isDarkMode) Color.White else Color.Black
     val textLight = if (isDarkMode) Color(0xFFB0B0B0) else Color(0xFF777777)
@@ -68,7 +83,7 @@ fun ChooseServerSheet(
                 .padding(top = 8.dp, bottom = 0.dp)
         ) {
             Text(
-                text = "Choose server",
+                text = stringResource(R.string.choose_server_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = textDark,
@@ -76,6 +91,8 @@ fun ChooseServerSheet(
                     .fillMaxWidth()
                     .padding(bottom = 20.dp)
             )
+            val hasCustomDns = CustomDnsPrefs.hasCustomDns(LocalContext.current)
+            val list = DNS_SERVER_OPTIONS + if (hasCustomDns) listOf(Location("Custom DNS")) else emptyList()
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier
@@ -83,7 +100,45 @@ fun ChooseServerSheet(
                     .heightIn(max = 400.dp),
                 contentPadding = PaddingValues(bottom = 40.dp, top = 4.dp)
             ) {
-                items(DNS_SERVER_OPTIONS) { dns ->
+                item {
+                    val cardShape = RoundedCornerShape(14.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = cardShape,
+                                spotColor = Color.Black.copy(alpha = 0.15f),
+                                ambientColor = Color.Black.copy(alpha = 0.08f)
+                            )
+                            .clickable { onCustomDnsClick() },
+                        shape = cardShape,
+                        colors = CardDefaults.cardColors(containerColor = contentBg),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 2.dp
+                        ),
+                        border = BorderStroke(
+                            0.5.dp,
+                            if (isDarkMode) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 18.dp, vertical = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.custom_dns_name),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = textDark
+                            )
+                        }
+                    }
+                }
+                items(list) { dns ->
                     val isSelected = dns.name == selectedLocation.name
                     val cardElevation = if (isSelected) 4.dp else 6.dp
                     val cardShape = RoundedCornerShape(14.dp)
@@ -128,7 +183,7 @@ fun ChooseServerSheet(
                             if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
-                                    contentDescription = "Selected",
+                                    contentDescription = stringResource(R.string.choose_server_selected),
                                     tint = Color.White,
                                     modifier = Modifier.size(20.dp)
                                 )

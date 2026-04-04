@@ -7,12 +7,15 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
@@ -26,8 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.FusionCoreTech.myapplication.dns.DnsConfig
 import com.FusionCoreTech.myapplication.dns.copyHostnameToClipboard
@@ -37,22 +43,43 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.FusionCoreTech.myapplication.ui.theme.AdShieldTheme
+import com.FusionCoreTech.myapplication.ui.theme.adShieldScreenBackgroundBrush
 import com.FusionCoreTech.myapplication.view.home.HomeScreen
+import com.FusionCoreTech.myapplication.view.premium.PremiumScreen
 import com.FusionCoreTech.myapplication.view.preferences.PreferencesScreen
+import com.FusionCoreTech.myapplication.view.advanced.AdvancedScreen
 import com.FusionCoreTech.myapplication.view.settings.SettingsScreen
+import com.FusionCoreTech.myapplication.view.settings.LanguageScreen
+import com.FusionCoreTech.myapplication.view.settings.FeedbackScreen
+import com.FusionCoreTech.myapplication.billing.BillingManager
 import com.FusionCoreTech.myapplication.view.speedtest.SpeedTestScreen
 import com.FusionCoreTech.myapplication.view.server.ChooseServerSheet
+import com.FusionCoreTech.myapplication.view.server.CustomDnsScreen
+import com.FusionCoreTech.myapplication.dns.CustomDnsPrefs
+import com.FusionCoreTech.myapplication.dns.SelectedDnsPrefs
+import com.FusionCoreTech.myapplication.localization.AppLanguageManager
+import com.FusionCoreTech.myapplication.model.Location
 import com.FusionCoreTech.myapplication.view.splash.SplashScreen
 import com.FusionCoreTech.myapplication.view.terms.TermsAndPrivacyScreen
 import com.FusionCoreTech.myapplication.view.terms.TermsIntroScreen
+import com.FusionCoreTech.myapplication.view.vpn.VpnProminentDisclosureScreen
 import com.FusionCoreTech.myapplication.viewmodel.HomeViewModel
 import com.FusionCoreTech.myapplication.viewmodel.PreferencesViewModel
 import com.FusionCoreTech.myapplication.viewmodel.ThemeMode
 import com.FusionCoreTech.myapplication.viewmodel.SettingsViewModel
+import com.FusionCoreTech.myapplication.ads.InterstitialAdHelper
 import com.FusionCoreTech.myapplication.ads.RewardedAdHelper
+import com.FusionCoreTech.myapplication.viewmodel.DnsLatencyResult
 import com.FusionCoreTech.myapplication.viewmodel.SpeedTestConnectionState
 import com.FusionCoreTech.myapplication.viewmodel.SpeedTestViewModel
 import com.FusionCoreTech.myapplication.vpn.DnsVpnService
+import com.FusionCoreTech.myapplication.network.InternetStatusSnackbar
+import com.google.android.gms.ads.MobileAds
+
+private const val APP_PREFS_NAME = "adshield_prefs"
+private const val APP_LANGUAGE_TAG_KEY = "app_language_tag"
+/** Play VpnService policy: separate in-app consent, persisted after first accept. */
+private const val KEY_VPN_PROMINENT_DISCLOSURE_ACCEPTED = "vpn_prominent_disclosure_accepted"
 
 private fun parseTimerToSeconds(timer: String): Int {
     // Parse "HH:MM:SS" format to seconds
@@ -66,9 +93,13 @@ private fun parseTimerToSeconds(timer: String): Int {
     return 0
 }
 
-private fun shareReferralLink(activity: ComponentActivity) {
+private fun shareReferralLink(activity: Activity) {
     val referralLink = "https://adshield.app/refer?code=YOUR_REFERRAL_CODE"
-    val shareMessage = "Check out AdShield - Secure your online privacy!\n\n$referralLink"
+    val shareMessage = activity.getString(
+        R.string.share_referral_message,
+        activity.getString(R.string.app_name),
+        referralLink
+    )
     
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
@@ -76,11 +107,14 @@ private fun shareReferralLink(activity: ComponentActivity) {
         type = "text/plain"
     }
     
-    val chooser = Intent.createChooser(shareIntent, "Share AdShield with friends")
+    val chooser = Intent.createChooser(
+        shareIntent,
+        activity.getString(R.string.share_referral_chooser_title)
+    )
     activity.startActivity(chooser)
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     
     private fun getAppVersion(): String {
         return try {
@@ -92,23 +126,33 @@ class MainActivity : ComponentActivity() {
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Set theme before super.onCreate to prevent black screen
-        // Theme is already set in manifest, but ensure it's applied early
+        val launchPrefs = getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE)
+        AppLanguageManager.applyLanguage(
+            launchPrefs.getString(APP_LANGUAGE_TAG_KEY, AppLanguageManager.SYSTEM_LANGUAGE_TAG)
+                ?: AppLanguageManager.SYSTEM_LANGUAGE_TAG
+        )
         super.onCreate(savedInstanceState)
-        
+        MobileAds.initialize(this) {}
         val appVersion = getAppVersion()
-        
         // Show splash screen as default launch screen
         setContent {
-            var showSplash by remember { mutableStateOf(true) }
-            var showSettings by remember { mutableStateOf(false) }
-            var showPreferences by remember { mutableStateOf(false) }
-            var showSpeedTest by remember { mutableStateOf(false) }
-            var showServerPicker by remember { mutableStateOf(false) }
-            var serverPickerFromSpeedTest by remember { mutableStateOf(true) }
+            var showSplash by rememberSaveable { mutableStateOf(true) }
+            var showSettings by rememberSaveable { mutableStateOf(false) }
+            var showAdvanced by rememberSaveable { mutableStateOf(false) }
+            var showLanguage by rememberSaveable { mutableStateOf(false) }
+            var showPreferences by rememberSaveable { mutableStateOf(false) }
+            var showSpeedTest by rememberSaveable { mutableStateOf(false) }
+            var showPremium by rememberSaveable { mutableStateOf(false) }
+            var showServerPicker by rememberSaveable { mutableStateOf(false) }
+            var showFeedback by rememberSaveable { mutableStateOf(false) }
+            var showCustomDns by rememberSaveable { mutableStateOf(false) }
+            var customDnsFromAdvanced by rememberSaveable { mutableStateOf(false) }
+            var serverPickerFromSpeedTest by rememberSaveable { mutableStateOf(true) }
             var showDnsPrompt by remember { mutableStateOf<Pair<String, String>?>(null) }
-            var showTermsIntro by remember { mutableStateOf(false) }
-            var showTermsFull by remember { mutableStateOf(false) }
+            var showTermsIntro by rememberSaveable { mutableStateOf(false) }
+            var showTermsFull by rememberSaveable { mutableStateOf(false) }
+            var showNotificationPrimer by rememberSaveable { mutableStateOf(false) }
+            var showVpnProminentDisclosure by rememberSaveable { mutableStateOf(false) }
             var pendingVpnServerName by remember { mutableStateOf<String?>(null) }
             val notificationPermissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission()
@@ -128,18 +172,59 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.StartActivityForResult()
             ) { result ->
                 if (result.resultCode == Activity.RESULT_OK && pendingVpnServerName != null) {
+                    val server = pendingVpnServerName!!
+                    pendingVpnServerName = null
                     startService(
                         Intent(this@MainActivity, DnsVpnService::class.java)
-                            .putExtra(DnsVpnService.EXTRA_SERVER_NAME, pendingVpnServerName)
+                            .putExtra(DnsVpnService.EXTRA_SERVER_NAME, server)
                     )
-                    homeViewModel.toggleConnection()
-                    pendingVpnServerName = null
+                    // Only start session timer if not already connected (e.g. changing server while on stays on).
+                    if (!homeViewModel.connectionState.value.isConnected) {
+                        homeViewModel.toggleConnection()
+                    }
                 }
             }
             val rewardedAdHelper = remember { RewardedAdHelper(this@MainActivity) { homeViewModel.addTimeFromReward() } }
+            val interstitialAdHelper = remember { InterstitialAdHelper(this@MainActivity) }
             val settingsViewModel: SettingsViewModel = viewModel()
             val preferencesViewModel: PreferencesViewModel = viewModel()
             val speedTestViewModel: SpeedTestViewModel = viewModel()
+
+            /** Core connect flow without rewarded ads (Play: core VPN must not be paywalled by ads). */
+            fun connectHomeFlow() {
+                val serverName = SelectedDnsPrefs.getSelectedName(this@MainActivity)
+                if (homeViewModel.selectedLocation.value.name != serverName) {
+                    homeViewModel.selectLocation(Location(serverName))
+                }
+                if (homeViewModel.connectionState.value.isConnected) return
+                val hostname = if (serverName == "Custom DNS") {
+                    CustomDnsPrefs.getHostname(this@MainActivity)
+                } else {
+                    DnsConfig.getPrivateDnsHostname(serverName)
+                }
+                val useVpnTunnel = DnsConfig.usesDnsVpnTunnel(serverName, this@MainActivity)
+                if (useVpnTunnel) {
+                    val prepareIntent = VpnService.prepare(this@MainActivity)
+                    if (prepareIntent != null) {
+                        pendingVpnServerName = serverName
+                        vpnPrepareLauncher.launch(prepareIntent)
+                    } else {
+                        startService(
+                            Intent(this@MainActivity, DnsVpnService::class.java)
+                                .putExtra(DnsVpnService.EXTRA_SERVER_NAME, serverName)
+                        )
+                        homeViewModel.toggleConnection()
+                    }
+                } else if (hostname != null) {
+                    homeViewModel.toggleConnection()
+                    if (!trySetPrivateDns(this@MainActivity, hostname)) {
+                        showDnsPrompt = hostname to packageName
+                    }
+                } else {
+                    homeViewModel.toggleConnection()
+                }
+                speedTestViewModel.reloadPersistedSelection()
+            }
             
             // Theme: System / Light / Dark from preferences
             val systemDark = isSystemInDarkTheme()
@@ -152,17 +237,85 @@ class MainActivity : ComponentActivity() {
 
             AdShieldTheme(darkTheme = isDarkMode) {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(adShieldScreenBackgroundBrush(isDarkMode)),
+                    color = Color.Transparent
                 ) {
-                    
+                    Box(modifier = Modifier.fillMaxSize()) {
+                    if (showNotificationPrimer) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showNotificationPrimer = false
+                                getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE).edit()
+                                    .putBoolean("notification_permission_asked", true)
+                                    .apply()
+                            },
+                            title = {
+                                Text(stringResource(R.string.notification_permission_rationale_title))
+                            },
+                            text = {
+                                Text(stringResource(R.string.notification_permission_rationale_message))
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        showNotificationPrimer = false
+                                        getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE).edit()
+                                            .putBoolean("notification_permission_asked", true)
+                                            .apply()
+                                        notificationPermissionLauncher.launch(
+                                            Manifest.permission.POST_NOTIFICATIONS
+                                        )
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.common_continue))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    onClick = {
+                                        showNotificationPrimer = false
+                                        getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE).edit()
+                                            .putBoolean("notification_permission_asked", true)
+                                            .apply()
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.common_not_now))
+                                }
+                            }
+                        )
+                    }
+                    // System back / gesture: go back one screen only, don't close app
+                    BackHandler {
+                        when {
+                            showVpnProminentDisclosure -> showVpnProminentDisclosure = false
+                            showPreferences -> showPreferences = false
+                            showLanguage -> showLanguage = false
+                            showFeedback -> showFeedback = false
+                            showAdvanced -> { showAdvanced = false; showSettings = true }
+                            showSettings -> { showFeedback = false; showSettings = false }
+                            showCustomDns -> showCustomDns = false
+                            showServerPicker -> showServerPicker = false
+                            showPremium -> showPremium = false
+                            showSpeedTest -> {
+                                speedTestViewModel.resetTest()
+                                showSpeedTest = false
+                            }
+                            showDnsPrompt != null -> showDnsPrompt = null
+                            showTermsFull -> { showTermsFull = false; showTermsIntro = true }
+                            showTermsIntro -> { showTermsIntro = false; showSplash = true }
+                            else -> { /* On Home or Splash: consume back so app doesn't close */ }
+                        }
+                    }
+
                     // Splash screen shows immediately as default launch screen
                     when {
                         showSplash -> {
                             SplashScreen(
                                 onNavigateToHome = {
                                     showSplash = false
-                                    val prefs = getSharedPreferences("adshield_prefs", MODE_PRIVATE)
+                                    val prefs = getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE)
                                     val termsAccepted = prefs.getBoolean("terms_accepted", false)
                                     if (!termsAccepted) {
                                         showTermsIntro = true
@@ -173,8 +326,7 @@ class MainActivity : ComponentActivity() {
                                                 this@MainActivity, Manifest.permission.POST_NOTIFICATIONS
                                             ) == PackageManager.PERMISSION_GRANTED
                                             if (!asked && !hasPermission) {
-                                                prefs.edit().putBoolean("notification_permission_asked", true).apply()
-                                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                                showNotificationPrimer = true
                                             }
                                         }
                                     }
@@ -191,40 +343,51 @@ class MainActivity : ComponentActivity() {
                             TermsAndPrivacyScreen(
                                 isDarkMode = isDarkMode,
                                 onAcceptToAll = {
-                                    getSharedPreferences("adshield_prefs", MODE_PRIVATE).edit()
+                                    getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE).edit()
                                         .putBoolean("terms_accepted", true).apply()
                                     showTermsFull = false
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        val prefs = getSharedPreferences("adshield_prefs", MODE_PRIVATE)
+                                        val prefs = getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE)
                                         val asked = prefs.getBoolean("notification_permission_asked", false)
                                         val hasPermission = ContextCompat.checkSelfPermission(
                                             this@MainActivity, Manifest.permission.POST_NOTIFICATIONS
                                         ) == PackageManager.PERMISSION_GRANTED
                                         if (!asked && !hasPermission) {
-                                            prefs.edit().putBoolean("notification_permission_asked", true).apply()
-                                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                            showNotificationPrimer = true
                                         }
                                     }
                                 }
                             )
                         }
                         showSpeedTest -> {
-                            val downloadSpeed by speedTestViewModel.downloadSpeed
-                            val uploadSpeed by speedTestViewModel.uploadSpeed
-                            val speedometerValue by speedTestViewModel.speedometerValue
+                            BackHandler {
+                                speedTestViewModel.resetTest()
+                                showSpeedTest = false
+                            }
                             val connectionState by speedTestViewModel.connectionState
+                            val dnsResults by speedTestViewModel.dnsResults
+                            val selectedSpeedLocation by speedTestViewModel.selectedLocation
+                            val applyDnsFromSpeedTest: (DnsLatencyResult) -> Unit = { dns ->
+                                val loc = Location(dns.name)
+                                speedTestViewModel.selectLocation(loc)
+                                homeViewModel.selectLocation(loc)
+                            }
                             SpeedTestScreen(
-                                downloadSpeed = downloadSpeed,
-                                uploadSpeed = uploadSpeed,
-                                speedometerValue = speedometerValue,
                                 connectionState = connectionState,
                                 isDarkMode = isDarkMode,
-                                onBackClick = { 
-                                    speedTestViewModel.resetTest()
-                                    showSpeedTest = false 
+                                dnsResults = dnsResults,
+                                activeDnsName = selectedSpeedLocation.name,
+                                onDnsRowClick = applyDnsFromSpeedTest,
+                                onUseDnsClick = { dns ->
+                                    applyDnsFromSpeedTest(dns)
+                                    showSpeedTest = false
                                 },
-                                onHistoryClick = { /* TODO: Show history */ },
-                                onStartTestClick = { 
+                                onBackClick = {
+                                    speedTestViewModel.resetTest()
+                                    showSpeedTest = false
+                                    interstitialAdHelper.maybeShowAfterNaturalBreak()
+                                },
+                                onStartTestClick = {
                                     if (connectionState == SpeedTestConnectionState.TEST_COMPLETED) {
                                         speedTestViewModel.restartTest()
                                     } else {
@@ -238,7 +401,55 @@ class MainActivity : ComponentActivity() {
                                 isDarkMode = isDarkMode,
                                 themeMode = themeMode,
                                 onThemeModeSelected = { preferencesViewModel.setThemeMode(it) },
-                                onBackClick = { showPreferences = false }
+                                onBackClick = {
+                                    showPreferences = false
+                                    interstitialAdHelper.maybeShowAfterNaturalBreak()
+                                }
+                            )
+                        }
+                        showLanguage -> {
+                            val selectedLanguageTag by preferencesViewModel.languageTag.collectAsState()
+                            LanguageScreen(
+                                isDarkMode = isDarkMode,
+                                selectedLanguageTag = selectedLanguageTag,
+                                onLanguageSelected = { tag ->
+                                    preferencesViewModel.setLanguageTag(tag)
+                                    showLanguage = false
+                                    recreate()
+                                },
+                                onBackClick = { showLanguage = false }
+                            )
+                        }
+                        showPremium -> {
+                            val billingManager = remember { BillingManager(this@MainActivity) }
+                            PremiumScreen(
+                                isDarkMode = isDarkMode,
+                                billingManager = billingManager,
+                                onBackClick = {
+                                    showPremium = false
+                                    interstitialAdHelper.maybeShowAfterNaturalBreak()
+                                },
+                                onPurchaseSuccess = { showPremium = false },
+                                onPurchaseError = { msg -> android.util.Log.e("Premium", msg) }
+                            )
+                        }
+                        showAdvanced -> {
+                            val connectionState by homeViewModel.connectionState
+                            val selectedLocation by homeViewModel.selectedLocation
+                            AdvancedScreen(
+                                isDarkMode = isDarkMode,
+                                isConnected = connectionState.isConnected,
+                                providerName = selectedLocation.name,
+                                onBackClick = {
+                                    showAdvanced = false
+                                    showFeedback = false
+                                    showSettings = true
+                                },
+                                onCustomDnsClick = {
+                                    customDnsFromAdvanced = true
+                                    showAdvanced = false
+                                    showCustomDns = true
+                                }
                             )
                         }
                         showSettings -> {
@@ -250,24 +461,45 @@ class MainActivity : ComponentActivity() {
                                     remainingSeconds = parseTimerToSeconds(connectionState.timer)
                                 )
                             }
-                            val settingsState = settingsViewModel.settingsState.value
-                            SettingsScreen(
-                                settingsState = settingsState.copy(
-                                    timer = connectionState.timer,
-                                    remainingSeconds = parseTimerToSeconds(connectionState.timer),
-                                    appVersion = appVersion
-                                ),
-                                progressPercentage = settingsViewModel.getProgressPercentage().let {
-                                    val totalSeconds = 1800f
-                                    val remaining = parseTimerToSeconds(connectionState.timer).toFloat()
-                                    (remaining / totalSeconds).coerceIn(0f, 1f)
-                                },
-                                isDarkMode = isDarkMode,
-                                onBackClick = { showSettings = false },
-                                onPreferencesClick = { showPreferences = true },
-                                onSpeedTestClick = { showSpeedTest = true },
-                                onReferFriendsClick = { shareReferralLink(this@MainActivity) }
-                            )
+                            if (showFeedback) {
+                                FeedbackScreen(
+                                    isDarkMode = isDarkMode,
+                                    onBackClick = { showFeedback = false }
+                                )
+                            } else {
+                                val settingsState = settingsViewModel.settingsState.value
+                                SettingsScreen(
+                                    settingsState = settingsState.copy(
+                                        timer = connectionState.timer,
+                                        remainingSeconds = parseTimerToSeconds(connectionState.timer),
+                                        appVersion = appVersion
+                                    ),
+                                    progressPercentage = settingsViewModel.getProgressPercentage().let {
+                                        val totalSeconds = 1800f
+                                        val remaining = parseTimerToSeconds(connectionState.timer).toFloat()
+                                        (remaining / totalSeconds).coerceIn(0f, 1f)
+                                    },
+                                    isDarkMode = isDarkMode,
+                                    onBackClick = {
+                                        showFeedback = false
+                                        showSettings = false
+                                        interstitialAdHelper.maybeShowAfterNaturalBreak()
+                                    },
+                                    onPreferencesClick = { showPreferences = true },
+                                    onSpeedTestClick = {
+                                        speedTestViewModel.reloadPersistedSelection()
+                                        showSpeedTest = true
+                                    },
+                                    onReferFriendsClick = { shareReferralLink(this@MainActivity) },
+                                    onLanguageClick = { showLanguage = true },
+                                    onAdvancedClick = {
+                                        showFeedback = false
+                                        showSettings = false
+                                        showAdvanced = true
+                                    },
+                                    onFeedbackClick = { showFeedback = true }
+                                )
+                            }
                         }
                         else -> {
                             val connectionState by homeViewModel.connectionState
@@ -295,11 +527,7 @@ class MainActivity : ComponentActivity() {
                                 isDarkMode = isDarkMode,
                                 onStartClick = {
                                     try {
-                                        val wasDisconnected = !connectionState.isConnected
                                         val wasConnected = connectionState.isConnected
-                                        val serverName = selectedLocation.name
-                                        val dnsIps = DnsConfig.getDnsServerIps(serverName)
-                                        val hostname = DnsConfig.getPrivateDnsHostname(serverName)
 
                                         if (wasConnected) {
                                             startService(
@@ -311,51 +539,128 @@ class MainActivity : ComponentActivity() {
                                             homeViewModel.toggleConnection()
                                             return@HomeScreen
                                         }
-                                        if (wasDisconnected && dnsIps != null) {
-                                            val prepareIntent = VpnService.prepare(this@MainActivity)
-                                            if (prepareIntent != null) {
-                                                pendingVpnServerName = serverName
-                                                vpnPrepareLauncher.launch(prepareIntent)
-                                            } else {
-                                                startService(
-                                                    Intent(this@MainActivity, DnsVpnService::class.java)
-                                                        .putExtra(DnsVpnService.EXTRA_SERVER_NAME, serverName)
-                                                )
-                                                homeViewModel.toggleConnection()
-                                            }
-                                        } else if (wasDisconnected && hostname != null) {
-                                            homeViewModel.toggleConnection()
-                                            if (!trySetPrivateDns(this@MainActivity, hostname)) {
-                                                showDnsPrompt = hostname to packageName
-                                            }
-                                        } else {
-                                            homeViewModel.toggleConnection()
+
+                                        val serverName = SelectedDnsPrefs.getSelectedName(this@MainActivity)
+                                        if (homeViewModel.selectedLocation.value.name != serverName) {
+                                            homeViewModel.selectLocation(Location(serverName))
                                         }
+                                        if (homeViewModel.connectionState.value.isConnected) {
+                                            return@HomeScreen
+                                        }
+                                        val useVpnTunnel = DnsConfig.usesDnsVpnTunnel(serverName, this@MainActivity)
+                                        val disclosureOk = getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE)
+                                            .getBoolean(KEY_VPN_PROMINENT_DISCLOSURE_ACCEPTED, false)
+                                        if (useVpnTunnel && !disclosureOk) {
+                                            showVpnProminentDisclosure = true
+                                            return@HomeScreen
+                                        }
+                                        connectHomeFlow()
                                     } catch (e: Exception) {
                                         android.util.Log.e("MainActivity", "Connect button error", e)
                                     }
                                 },
                                 onRewardClick = { rewardedAdHelper.show() },
+                                onPremiumClick = { showPremium = true },
                                 onLocationClick = {
                                     serverPickerFromSpeedTest = false
                                     showServerPicker = true
                                 },
-                                onMenuClick = { showSettings = true }
+                                onMenuClick = {
+                                    showFeedback = false
+                                    showSettings = true
+                                }
                             )
                         }
                     }
-                    if (showServerPicker) {
-                        val speedSelected by speedTestViewModel.selectedLocation
-                        val homeSelected by homeViewModel.selectedLocation
-                        ChooseServerSheet(
-                            selectedLocation = if (serverPickerFromSpeedTest) speedSelected else homeSelected,
+                    if (showCustomDns && !showPremium) {
+                        CustomDnsScreen(
                             isDarkMode = isDarkMode,
-                            onSelect = {
-                                if (serverPickerFromSpeedTest) speedTestViewModel.selectLocation(it)
-                                else homeViewModel.selectLocation(it)
-                                showServerPicker = false
+                            onBackClick = {
+                                showCustomDns = false
+                                if (customDnsFromAdvanced) {
+                                    showAdvanced = true
+                                    customDnsFromAdvanced = false
+                                }
                             },
-                            onDismiss = { showServerPicker = false }
+                            onSaved = {
+                                showCustomDns = false
+                                homeViewModel.selectLocation(Location("Custom DNS"))
+                                if (customDnsFromAdvanced) {
+                                    showAdvanced = true
+                                    customDnsFromAdvanced = false
+                                }
+                            },
+                            onGoPremium = { showPremium = true }
+                        )
+                    }
+                    if (showServerPicker) {
+                                val speedSelected by speedTestViewModel.selectedLocation
+                                val homeSelected by homeViewModel.selectedLocation
+                                ChooseServerSheet(
+                                    selectedLocation = if (serverPickerFromSpeedTest) speedSelected else homeSelected,
+                                    isDarkMode = isDarkMode,
+                                    onSelect = {
+                                        val picked = it
+                                        if (serverPickerFromSpeedTest) {
+                                            speedTestViewModel.selectLocation(picked)
+                                        } else {
+                                            val newServer = picked.name
+                                            val wasConnected = homeViewModel.connectionState.value.isConnected
+                                            homeViewModel.selectLocation(picked)
+                                            if (wasConnected) {
+                                                startService(
+                                                    Intent(this@MainActivity, DnsVpnService::class.java).apply {
+                                                        action = DnsVpnService.ACTION_STOP
+                                                    }
+                                                )
+                                                try {
+                                                    tryClearPrivateDns(this@MainActivity)
+                                                } catch (_: Throwable) { }
+                                                val useVpnTunnel = DnsConfig.usesDnsVpnTunnel(newServer, this@MainActivity)
+                                                val host = if (newServer == "Custom DNS") {
+                                                    CustomDnsPrefs.getHostname(this@MainActivity)
+                                                } else {
+                                                    DnsConfig.getPrivateDnsHostname(newServer)
+                                                }
+                                                if (useVpnTunnel) {
+                                                    val prep = VpnService.prepare(this@MainActivity)
+                                                    if (prep != null) {
+                                                        pendingVpnServerName = newServer
+                                                        vpnPrepareLauncher.launch(prep)
+                                                    } else {
+                                                        startService(
+                                                            Intent(this@MainActivity, DnsVpnService::class.java)
+                                                                .putExtra(DnsVpnService.EXTRA_SERVER_NAME, newServer)
+                                                        )
+                                                    }
+                                                } else if (host != null) {
+                                                    if (!trySetPrivateDns(this@MainActivity, host)) {
+                                                        showDnsPrompt = host to packageName
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        showServerPicker = false
+                                    },
+                                    onDismiss = { showServerPicker = false },
+                                    onCustomDnsClick = {
+                                        customDnsFromAdvanced = false
+                                        showServerPicker = false
+                                        showCustomDns = true
+                                    }
+                                )
+                    }
+                    if (showVpnProminentDisclosure) {
+                        VpnProminentDisclosureScreen(
+                            isDarkMode = isDarkMode,
+                            onAccept = {
+                                getSharedPreferences(APP_PREFS_NAME, MODE_PRIVATE).edit()
+                                    .putBoolean(KEY_VPN_PROMINENT_DISCLOSURE_ACCEPTED, true)
+                                    .apply()
+                                showVpnProminentDisclosure = false
+                                connectHomeFlow()
+                            },
+                            onDecline = { showVpnProminentDisclosure = false }
                         )
                     }
                     showDnsPrompt?.let { (hostname, packageName) ->
@@ -363,14 +668,10 @@ class MainActivity : ComponentActivity() {
                         val adbCommand = "adb shell pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"
                         AlertDialog(
                             onDismissRequest = { showDnsPrompt = null },
-                            title = { Text("Allow app to set DNS automatically") },
+                            title = { Text(stringResource(R.string.dns_prompt_title)) },
                             text = {
                                 Text(
-                                    "To set DNS from the app (no manual step), allow permission once:\n\n" +
-                                    "1. Connect phone to PC with USB\n" +
-                                    "2. Enable USB debugging (Settings → Developer options)\n" +
-                                    "3. On PC, run this command:\n\n$adbCommand\n\n" +
-                                    "After this, app will set DNS automatically when you Connect.",
+                                    stringResource(R.string.dns_prompt_message, adbCommand),
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             },
@@ -378,12 +679,14 @@ class MainActivity : ComponentActivity() {
                                 TextButton(onClick = {
                                     copyHostnameToClipboard(ctx, adbCommand)
                                     showDnsPrompt = null
-                                }) { Text("Copy command") }
+                                }) { Text(stringResource(R.string.dns_prompt_copy_command)) }
                             },
                             dismissButton = {
-                                TextButton(onClick = { showDnsPrompt = null }) { Text("OK") }
+                                TextButton(onClick = { showDnsPrompt = null }) { Text(stringResource(R.string.common_ok)) }
                             }
                         )
+                    }
+                    InternetStatusSnackbar()
                     }
                 }
             }

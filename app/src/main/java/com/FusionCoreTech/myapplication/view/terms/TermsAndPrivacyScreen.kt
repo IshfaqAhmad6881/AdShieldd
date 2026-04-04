@@ -11,9 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.FusionCoreTech.myapplication.R
 import com.FusionCoreTech.myapplication.ui.theme.*
 
 private const val TERMS_TEXT = """
@@ -49,10 +51,10 @@ AdShield may collect minimal usage data to improve the service. We do not sell y
 When you use our DNS/VPN feature, DNS queries are processed according to the DNS provider you select (e.g. AdGuard DNS). Please refer to their privacy policy for how they handle data.
 
 3. Local Data
-Settings and preferences are stored locally on your device. Connection status may be shown in notifications when you are connected.
+Settings and preferences are stored locally on your device. Before the first VPN-style DNS connection, the app shows a separate in-app notice explaining why Android’s VPN permission is used (this is required by Google Play for VpnService). While you are connected, Android requires us to show an ongoing notification so the DNS/VPN protection service can keep running in the background. That notice means you are still protected; you should disconnect inside the app before expecting it to go away—on many devices it cannot be dismissed safely until then.
 
 4. Permissions
-We request notification permission to show connection status. We request VPN permission to apply DNS when you connect. No other sensitive data is collected without your consent.
+We request: VPN (system approval when you connect) to route DNS; notification permission (Android 13+) so you can see that required connection status while the service runs in the background; approximate or precise location only in the foreground where the system requires it to show Wi‑Fi network name in Advanced diagnostics; network and Wi‑Fi state to display connectivity; optional Advertising ID related use per Google Play / AdMob policies for ads; and Play Billing to process purchases. Core connection and speed test are not gated behind watching ads. Sensitive data is not sold. Optional Private DNS automation may describe an ADB developer grant that is not available from the Play install flow.
 
 5. Security
 We aim to protect your data with industry-standard practices. No personal data is transmitted to our servers except as needed for the service.
@@ -72,7 +74,6 @@ fun TermsAndPrivacyScreen(
     isDarkMode: Boolean,
     onAcceptToAll: () -> Unit
 ) {
-    val bg = if (isDarkMode) DarkBackgroundGrey else BackgroundGrey
     val textDark = if (isDarkMode) DarkTextDark else TextDark
     val textLight = if (isDarkMode) DarkTextLight else TextLight
     val scrollState = rememberScrollState()
@@ -80,7 +81,7 @@ fun TermsAndPrivacyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bg)
+            .background(adShieldScreenBackgroundBrush(isDarkMode))
     ) {
         Column(
             modifier = Modifier
@@ -89,7 +90,7 @@ fun TermsAndPrivacyScreen(
                 .padding(24.dp)
         ) {
             Text(
-                text = "Terms of Use",
+                text = stringResource(R.string.terms_of_use_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = textDark
@@ -103,7 +104,7 @@ fun TermsAndPrivacyScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Privacy Policy",
+                text = stringResource(R.string.privacy_policy_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = textDark
@@ -128,7 +129,7 @@ fun TermsAndPrivacyScreen(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
         ) {
             Text(
-                text = "Accept to all",
+                text = stringResource(R.string.terms_accept_all),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White

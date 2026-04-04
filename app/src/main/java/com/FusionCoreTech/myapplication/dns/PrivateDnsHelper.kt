@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import com.FusionCoreTech.myapplication.R
 
 private const val TAG = "PrivateDnsHelper"
 
@@ -50,7 +51,9 @@ fun tryClearPrivateDns(context: Context): Boolean {
 
 fun copyHostnameToClipboard(context: Context, hostname: String) {
     val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-    cm?.setPrimaryClip(ClipData.newPlainText("Private DNS", hostname))
+    cm?.setPrimaryClip(
+        ClipData.newPlainText(context.getString(R.string.clipboard_label_dns), hostname)
+    )
 }
 
 /** Opens system Settings so user can set Private DNS manually (path varies by device). */

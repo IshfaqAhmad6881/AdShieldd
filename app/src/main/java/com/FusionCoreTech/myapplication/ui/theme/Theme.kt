@@ -1,15 +1,19 @@
 package com.FusionCoreTech.myapplication.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -52,7 +56,19 @@ fun AdShieldTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = Typography
+    ) {
+        // App-wide ripple: bounded, slightly enlarged radius, tuned alpha for light/dark readability.
+        val rippleTint = if (darkTheme) Color.White else PremiumOrange
+        val rippleAlpha = if (darkTheme) 0.32f else 0.26f
+        CompositionLocalProvider(
+            LocalIndication provides ripple(
+                bounded = true,
+                radius = 42.dp,
+                color = rippleTint.copy(alpha = rippleAlpha)
+            )
+        ) {
+            content()
+        }
+    }
 }

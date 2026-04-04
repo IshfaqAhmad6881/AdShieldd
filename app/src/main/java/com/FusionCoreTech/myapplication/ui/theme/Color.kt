@@ -1,5 +1,6 @@
 package com.FusionCoreTech.myapplication.ui.theme
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -30,3 +31,27 @@ val DarkTextDark = Color(0xFFFFFFFF) // Dark mode text
 val DarkTextLight = Color(0xFFB0B0B0) // Dark mode light text
 val DarkShadowLight = Color(0xFF2C2C2C) // Dark mode light shadow
 val DarkShadowDark = Color(0xFF000000) // Dark mode dark shadow
+
+/**
+ * App-wide vertical background: dark = cool slate → near black;
+ * light = soft mist (not pure white) with theme-tinted warmth at the bottom, mirroring dark structure.
+ */
+fun adShieldScreenBackgroundBrush(isDarkMode: Boolean): Brush =
+    if (isDarkMode) {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFF121821),
+                Color(0xFF0D131B),
+                DarkBackgroundGrey
+            )
+        )
+    } else {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFFF2F4F8),
+                Color(0xFFE8ECF3),
+                Color(0xFFF5E6DE),
+                OrangeLight
+            )
+        )
+    }

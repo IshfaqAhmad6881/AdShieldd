@@ -16,31 +16,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.FusionCoreTech.myapplication.R
 import com.FusionCoreTech.myapplication.model.ConnectionState
 import com.FusionCoreTech.myapplication.model.Location
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.FusionCoreTech.myapplication.ui.theme.OrangePrimary
 import com.FusionCoreTech.myapplication.ui.theme.PremiumOrange
 import com.FusionCoreTech.myapplication.ui.theme.OrangeLight
 import com.FusionCoreTech.myapplication.ui.theme.BackgroundWhite
-import com.FusionCoreTech.myapplication.ui.theme.BackgroundGrey
 import com.FusionCoreTech.myapplication.ui.theme.OuterRingGrey
 import com.FusionCoreTech.myapplication.ui.theme.TextDark
 import com.FusionCoreTech.myapplication.ui.theme.TextLight
-import com.FusionCoreTech.myapplication.ui.theme.DarkBackgroundGrey
 import com.FusionCoreTech.myapplication.ui.theme.DarkBackgroundWhite
 import com.FusionCoreTech.myapplication.ui.theme.DarkOuterRingGrey
 import com.FusionCoreTech.myapplication.ui.theme.DarkTextDark
 import com.FusionCoreTech.myapplication.ui.theme.DarkTextLight
+import com.FusionCoreTech.myapplication.ads.BannerAdView
 
 @Composable
 fun HomeScreen(
@@ -54,25 +52,21 @@ fun HomeScreen(
     onLocationClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
-    val backgroundColor = if (isDarkMode) DarkBackgroundGrey else BackgroundGrey
     val cardBackgroundColor = if (isDarkMode) DarkBackgroundWhite else BackgroundWhite
     val outerRingColor = if (isDarkMode) DarkOuterRingGrey else OuterRingGrey
     val textDarkColor = if (isDarkMode) DarkTextDark else TextDark
     val textLightColor = if (isDarkMode) DarkTextLight else TextLight
     
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
+        modifier = Modifier.fillMaxSize()
     ) {
         // Status bar spacer - space for system status bar
         Spacer(modifier = Modifier.height(32.dp))
         
-        // Main Content: scrollable top + fixed bottom (Open DNS row always visible)
+        // Main Content: scrollable top + fixed bottom (DNS server row always visible)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundColor)
                 .padding(horizontal = 20.dp)
         ) {
             Column(
@@ -107,15 +101,17 @@ fun HomeScreen(
             }
             
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Open DNS row - always visible at bottom
+
+            // DNS server row — opens bottom sheet (label + selection inside row)
             LocationSelector(
                 location = selectedLocation,
                 isDarkMode = isDarkMode,
                 onLocationClick = onLocationClick
             )
-            
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            // Banner ad - only on Home screen
+            BannerAdView(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -146,7 +142,7 @@ fun HeaderSection(
         ) {
             Image(
                 painter = painterResource(id = R.drawable.menu),
-                contentDescription = "Menu",
+                contentDescription = stringResource(R.string.home_menu),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -176,11 +172,11 @@ fun HeaderSection(
                     // Premium icon
                     Image(
                         painter = painterResource(id = R.drawable.premium),
-                        contentDescription = "Premium",
+                        contentDescription = stringResource(R.string.home_premium),
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Go Premium",
+                        text = stringResource(R.string.home_go_premium),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -260,12 +256,12 @@ fun SpeedMetricsCard(
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.arrowdownward),
-                                contentDescription = "Download",
+                                contentDescription = stringResource(R.string.home_download),
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                         Text(
-                            text = "Download",
+                            text = stringResource(R.string.home_download),
                             fontSize = 16.sp,
                             color = textColor,
                             fontWeight = FontWeight.SemiBold
@@ -324,12 +320,12 @@ fun SpeedMetricsCard(
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.arrowupward),
-                                contentDescription = "Upload",
+                                contentDescription = stringResource(R.string.home_upload),
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                         Text(
-                            text = "Upload",
+                            text = stringResource(R.string.home_upload),
                             fontSize = 16.sp,
                             color = textColor,
                             fontWeight = FontWeight.SemiBold
@@ -395,7 +391,7 @@ fun MainControlSection(
             contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp)
         ) {
             Text(
-                text = "Reward – Watch ad, get +30 min",
+                text = stringResource(R.string.home_reward_watch_ad),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White
@@ -403,7 +399,7 @@ fun MainControlSection(
         }
         // Small label: remaining / total time
         Text(
-            text = "Time left: ${formatTimeLabel(remainingSeconds)}",
+            text = stringResource(R.string.home_time_left, formatTimeLabel(remainingSeconds)),
             fontSize = 11.sp,
             color = textLightColor
         )
@@ -458,13 +454,21 @@ fun MainControlSection(
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.power),
-                                contentDescription = if (isConnected) "Stop" else "Start",
+                                contentDescription = if (isConnected) {
+                                    stringResource(R.string.home_stop)
+                                } else {
+                                    stringResource(R.string.home_start)
+                                },
                                 modifier = Modifier.size(40.dp),
                                 colorFilter = if (isConnected) ColorFilter.tint(Color.White) else null
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = if (isConnected) "Stop" else "Start",
+                                text = if (isConnected) {
+                                    stringResource(R.string.home_stop)
+                                } else {
+                                    stringResource(R.string.home_start)
+                                },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = if (isConnected) Color.White else OrangePrimary
@@ -482,7 +486,11 @@ fun MainControlSection(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = if (isConnected) "Safely connected" else "Not connected",
+                text = if (isConnected) {
+                    stringResource(R.string.home_safely_connected)
+                } else {
+                    stringResource(R.string.common_not_connected)
+                },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = textDarkColor
@@ -604,13 +612,15 @@ fun LocationSelector(
 ) {
     val cardBg = if (isDarkMode) DarkBackgroundWhite else BackgroundWhite
     val textColor = if (isDarkMode) DarkTextDark else TextDark
-    val iconColor = if (isDarkMode) DarkTextLight else TextLight
+    val captionColor = if (isDarkMode) DarkTextLight else TextLight
+    val accent = if (isDarkMode) OrangePrimary else PremiumOrange
+    val chevronColor = captionColor.copy(alpha = 0.85f)
     val borderColor = if (isDarkMode) Color.White.copy(alpha = 0.15f) else Color.LightGray.copy(alpha = 0.3f)
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .wrapContentHeight()
             .clickable { onLocationClick() },
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
@@ -621,7 +631,8 @@ fun LocationSelector(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .wrapContentHeight()
                 .clip(RoundedCornerShape(28.dp))
                 .background(cardBg)
                 .border(
@@ -632,8 +643,8 @@ fun LocationSelector(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -642,24 +653,32 @@ fun LocationSelector(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_globe),
-                        contentDescription = "Server / DNS",
-                        modifier = Modifier.size(24.dp),
-                        colorFilter = ColorFilter.tint(iconColor)
+                        painter = painterResource(id = R.drawable.ic_dns),
+                        contentDescription = stringResource(R.string.home_choose_dns_server),
+                        modifier = Modifier.size(26.dp),
+                        colorFilter = ColorFilter.tint(accent)
                     )
-                    Text(
-                        text = location.name,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = textColor
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = stringResource(R.string.home_choose_dns_server),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = captionColor
+                        )
+                        Text(
+                            text = location.name,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = textColor
+                        )
+                    }
                 }
                 
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowUp,
-                    contentDescription = "Select Location",
-                    tint = iconColor,
-                    modifier = Modifier.size(20.dp)
+                    contentDescription = stringResource(R.string.home_select_location),
+                    tint = chevronColor,
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }

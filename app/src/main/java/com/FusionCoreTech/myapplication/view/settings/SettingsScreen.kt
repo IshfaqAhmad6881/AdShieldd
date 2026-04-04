@@ -2,10 +2,10 @@ package com.FusionCoreTech.myapplication.view.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -14,12 +14,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.FusionCoreTech.myapplication.R
 import com.FusionCoreTech.myapplication.model.SettingsState
+import com.FusionCoreTech.myapplication.ui.components.AdShieldScreenInsets
+import com.FusionCoreTech.myapplication.ui.components.AdShieldTopBarRow
 import com.FusionCoreTech.myapplication.ui.theme.*
 
 @Composable
@@ -30,158 +34,163 @@ fun SettingsScreen(
     onBackClick: () -> Unit = {},
     onPreferencesClick: () -> Unit = {},
     onSpeedTestClick: () -> Unit = {},
-    onReferFriendsClick: () -> Unit = {}
+    onReferFriendsClick: () -> Unit = {},
+    onLanguageClick: () -> Unit = {},
+    onAdvancedClick: () -> Unit = {},
+    onFeedbackClick: () -> Unit = {}
 ) {
-    val backgroundColor = if (isDarkMode) DarkBackgroundGrey else BackgroundGrey
     val cardBackgroundColor = if (isDarkMode) DarkBackgroundWhite else BackgroundWhite
     val textDarkColor = if (isDarkMode) DarkTextDark else TextDark
     val textLightColor = if (isDarkMode) DarkTextLight else TextLight
     val borderColor = if (isDarkMode) Color.White.copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.3f)
+    val menuIconTint = if (isDarkMode) OrangePrimary else PremiumOrange
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(adShieldScreenBackgroundBrush(isDarkMode))
+            .statusBarsPadding()
     ) {
-        // Status bar spacer
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Main Content
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(cardBackgroundColor)
-                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .weight(1f, fill = true)
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
         ) {
-            // Content wrapper with horizontal padding
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = AdShieldScreenInsets.headerHorizontal)
             ) {
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(AdShieldScreenInsets.belowStatusBar))
 
-            // Back Button - White rounded rectangle with leftbtn image and shadow
-            // Positioned slightly right and down
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, top = 20.dp)
-            ) {
-                Card(
-                    modifier = Modifier
-                        .width(48.dp)
-                        .height(48.dp)
-                        .clickable { onBackClick() },
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 4.dp,
-                        pressedElevation = 2.dp
-                    ),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                AdShieldTopBarRow(
+                    isDarkMode = isDarkMode,
+                    onBackClick = onBackClick
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                CircularProgressSection(
+                    timer = settingsState.timer,
+                    progressPercentage = progressPercentage,
+                    textDarkColor = textDarkColor,
+                    textLightColor = textLightColor,
+                    cardBackgroundColor = cardBackgroundColor
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.leftbtn),
-                            contentDescription = "Back",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    Text(
+                        text = stringResource(R.string.settings_secured_until),
+                        fontSize = 14.sp,
+                        color = textLightColor
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.settings_connection_expires_in, settingsState.timer),
+                        fontSize = 14.sp,
+                        color = textLightColor
+                    )
                 }
+
+                Spacer(modifier = Modifier.height(40.dp))
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Circular Progress Indicator with Timer
-            CircularProgressSection(
-                timer = settingsState.timer,
-                progressPercentage = progressPercentage,
-                textDarkColor = textDarkColor,
-                textLightColor = textLightColor,
-                cardBackgroundColor = cardBackgroundColor
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Timer Status Text
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Your are secured Until",
-                    fontSize = 14.sp,
-                    color = textLightColor
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Connection expires in ${settingsState.timer}",
-                    fontSize = 14.sp,
-                    color = textLightColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
-            }
-
-            // Menu Items List with Full-Width Separators
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 MenuItem(
                     iconResId = R.drawable.preferences,
-                    title = "Preferences",
-                    caption = "Customize your settings",
+                    title = stringResource(R.string.settings_preferences),
+                    caption = stringResource(R.string.settings_preferences_caption),
                     onClick = onPreferencesClick,
                     cardBackgroundColor = cardBackgroundColor,
                     textDarkColor = textDarkColor,
                     textLightColor = textLightColor,
-                    borderColor = borderColor
+                    borderColor = borderColor,
+                    iconTint = menuIconTint
                 )
                 CustomSeparator()
                 MenuItem(
                     iconResId = R.drawable.speed,
-                    title = "Speed Test",
-                    caption = "Check your connection speed",
+                    title = stringResource(R.string.settings_speed_test),
+                    caption = stringResource(R.string.settings_speed_test_caption),
                     onClick = onSpeedTestClick,
                     cardBackgroundColor = cardBackgroundColor,
                     textDarkColor = textDarkColor,
                     textLightColor = textLightColor,
-                    borderColor = borderColor
+                    borderColor = borderColor,
+                    iconTint = menuIconTint
+                )
+                CustomSeparator()
+                MenuItem(
+                    iconResId = R.drawable.ic_globe,
+                    title = stringResource(R.string.settings_language),
+                    caption = stringResource(R.string.settings_language_caption),
+                    onClick = onLanguageClick,
+                    cardBackgroundColor = cardBackgroundColor,
+                    textDarkColor = textDarkColor,
+                    textLightColor = textLightColor,
+                    borderColor = borderColor,
+                    iconTint = menuIconTint
+                )
+                CustomSeparator()
+                MenuItem(
+                    iconResId = R.drawable.menu,
+                    title = stringResource(R.string.settings_advanced),
+                    caption = stringResource(R.string.settings_advanced_caption),
+                    onClick = onAdvancedClick,
+                    cardBackgroundColor = cardBackgroundColor,
+                    textDarkColor = textDarkColor,
+                    textLightColor = textLightColor,
+                    borderColor = borderColor,
+                    iconTint = menuIconTint
                 )
                 CustomSeparator()
                 MenuItem(
                     iconResId = R.drawable.gift,
-                    title = "Refer Friends",
-                    caption = "Share with your friend",
+                    title = stringResource(R.string.settings_refer_friends),
+                    caption = stringResource(R.string.settings_refer_friends_caption),
                     onClick = onReferFriendsClick,
                     cardBackgroundColor = cardBackgroundColor,
                     textDarkColor = textDarkColor,
                     textLightColor = textLightColor,
-                    borderColor = borderColor
+                    borderColor = borderColor,
+                    iconTint = menuIconTint
+                )
+                CustomSeparator()
+                MenuItem(
+                    iconResId = R.drawable.ic_feedback,
+                    title = stringResource(R.string.settings_feedback),
+                    caption = stringResource(R.string.settings_feedback_caption),
+                    onClick = onFeedbackClick,
+                    cardBackgroundColor = cardBackgroundColor,
+                    textDarkColor = textDarkColor,
+                    textLightColor = textLightColor,
+                    borderColor = borderColor,
+                    iconTint = menuIconTint
                 )
             }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // App Version Footer - Centered
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(bottom = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "App version ${settingsState.appVersion}",
-                    fontSize = 12.sp,
-                    color = textLightColor,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(R.string.settings_app_version, settingsState.appVersion),
+                fontSize = 12.sp,
+                color = textLightColor,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -243,7 +252,7 @@ fun CircularProgressSection(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Expire",
+                        text = stringResource(R.string.settings_expire),
                         fontSize = 14.sp,
                         color = textLightColor,
                         fontWeight = FontWeight.Normal
@@ -257,7 +266,7 @@ fun CircularProgressSection(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Remaining",
+                        text = stringResource(R.string.settings_remaining),
                         fontSize = 14.sp,
                         color = textLightColor,
                         fontWeight = FontWeight.Normal
@@ -277,7 +286,8 @@ fun MenuItem(
     cardBackgroundColor: Color,
     textDarkColor: Color,
     textLightColor: Color,
-    borderColor: Color
+    borderColor: Color,
+    iconTint: Color
 ) {
     Row(
         modifier = Modifier
@@ -293,11 +303,12 @@ fun MenuItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Icon - Orange colored
+            // Icon — theme accent (matches Advanced / Home)
             Image(
                 painter = painterResource(id = iconResId),
                 contentDescription = title,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(iconTint)
             )
 
             // Text Content
@@ -322,8 +333,9 @@ fun MenuItem(
         // Right side: Arrow Icon
         Image(
             painter = painterResource(id = R.drawable.forward),
-            contentDescription = "Navigate",
-            modifier = Modifier.size(40.dp)
+            contentDescription = stringResource(R.string.common_navigate),
+            modifier = Modifier.size(40.dp),
+            colorFilter = ColorFilter.tint(iconTint.copy(alpha = 0.85f))
         )
     }
 }

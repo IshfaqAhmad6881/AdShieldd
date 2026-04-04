@@ -1,14 +1,19 @@
 package com.FusionCoreTech.myapplication.viewmodel
 
-import android.net.TrafficStats
+import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.FusionCoreTech.myapplication.dns.SelectedDnsPrefs
 import com.FusionCoreTech.myapplication.model.Location
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
+import kotlinx.coroutines.withContext
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetSocketAddress
 
 enum class SpeedTestConnectionState {
     IDLE,
@@ -17,205 +22,177 @@ enum class SpeedTestConnectionState {
     TEST_COMPLETED
 }
 
-class SpeedTestViewModel : ViewModel() {
+data class DnsLatencyResult(
+    val name: String,
+    val primaryIp: String,
+    val secondaryIp: String? = null,
+    val latencyMs: Long? = null
+)
 
-    private val _downloadSpeed = mutableStateOf(0.00f)
-    val downloadSpeed: State<Float> = _downloadSpeed
+private const val DNS_QUERY_TIMEOUT_MS = 2200
+private const val DNS_ATTEMPTS = 2
+private const val DNS_TEST_DOMAIN = "example.com"
 
-    private val _uploadSpeed = mutableStateOf(0.00f)
-    val uploadSpeed: State<Float> = _uploadSpeed
-
-    private val _speedometerValue = mutableStateOf(0f) // Value for speedometer needle (0-100)
-    val speedometerValue: State<Float> = _speedometerValue
+/**
+ * Speed Test screen: real DNS resolver benchmark only (UDP port 53), no HTTP throughput test.
+ * Server list uses well-known public DNS IPs (same class of resolvers as typical DNS benchmarks).
+ */
+class SpeedTestViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _connectionState = mutableStateOf(SpeedTestConnectionState.IDLE)
     val connectionState: State<SpeedTestConnectionState> = _connectionState
 
-    private val _selectedLocation = mutableStateOf(Location(name = "Open DNS"))
+    private val _selectedLocation = mutableStateOf(
+        Location(name = SelectedDnsPrefs.getSelectedName(getApplication()))
+    )
     val selectedLocation: State<Location> = _selectedLocation
+
+    private val _dnsResults = mutableStateOf<List<DnsLatencyResult>>(emptyList())
+    val dnsResults: State<List<DnsLatencyResult>> = _dnsResults
 
     fun selectLocation(location: Location) {
         _selectedLocation.value = location
+        SelectedDnsPrefs.saveSelectedName(getApplication(), location.name)
     }
 
-    fun setDownloadSpeed(speed: Float) {
-        _downloadSpeed.value = speed
-        // Update speedometer needle position proportionally with download speed
-        // Convert bytes/s to mb/s, then map to 0-100 range (assuming max is 100 mb/s)
-        val speedInMbps = speed / (1024 * 1024) // Convert bytes/s to mb/s
-        _speedometerValue.value = speedInMbps.coerceIn(0f, 100f) // Direct proportional mapping
-    }
-
-    fun setUploadSpeed(speed: Float) {
-        _uploadSpeed.value = speed
+    /** Keep speed-test “active DNS” in sync after home/changed server picker (prefs updated elsewhere). */
+    fun reloadPersistedSelection() {
+        _selectedLocation.value = Location(name = SelectedDnsPrefs.getSelectedName(getApplication()))
     }
 
     fun startConnection() {
         _connectionState.value = SpeedTestConnectionState.CONNECTING
-        // Reset speeds - ensure needle starts exactly at label 0 (leftmost position)
-        _downloadSpeed.value = 0.00f
-        _uploadSpeed.value = 0.00f
-        _speedometerValue.value = 0f // Explicitly set to 0 to align needle with label 0
-        
-        // Simulate connection process, then start test
+        _dnsResults.value = emptyList()
+
         viewModelScope.launch {
-            delay(2000) // 2 seconds connecting state
-            _connectionState.value = SpeedTestConnectionState.TEST_RUNNING
-            // Start simulating speed test - animate needle and fill arc
-            simulateSpeedTest()
+            try {
+                delay(600)
+                if (_connectionState.value != SpeedTestConnectionState.CONNECTING) return@launch
+                _connectionState.value = SpeedTestConnectionState.TEST_RUNNING
+                runDnsBenchmarkOnly()
+            } catch (_: Throwable) { }
+            withContext(Dispatchers.Main) {
+                _connectionState.value = SpeedTestConnectionState.TEST_COMPLETED
+            }
         }
     }
-    
-    private fun simulateSpeedTest() {
-        viewModelScope.launch {
-            // Ensure needle starts at 0 (label 0 - leftmost position) - like car speedometer
-            _speedometerValue.value = 0f
-            _downloadSpeed.value = 0f
-            _uploadSpeed.value = 0f
-            
-            // Measure actual network speed using TrafficStats (like Ookla)
-            // Get baseline before test starts
-            val baselineRxBytes = TrafficStats.getTotalRxBytes()
-            val baselineTxBytes = TrafficStats.getTotalTxBytes()
-            var lastRxBytes = baselineRxBytes
-            var lastTxBytes = baselineTxBytes
-            var lastTime = System.currentTimeMillis()
-            
-            // Phase 1: Download speed test - measure actual download speed
-            val downloadTestDuration = 8000L // 8 seconds for download test
-            val updateInterval = 100L // Update every 100ms for smooth updates
-            val downloadUpdates = (downloadTestDuration / updateInterval).toInt()
-            
-            // Generate random target speeds for realistic simulation
-            val targetDownloadSpeedMbps = 25f + Random.nextFloat() * 25f // Random between 25-50 mbps
-            var maxDownloadSpeed = 0f
-            
-            // Simulate download speed test - measure network activity
-            for (i in 0..downloadUpdates) {
-                val currentTime = System.currentTimeMillis()
-                val timeDelta = (currentTime - lastTime).coerceAtLeast(1L) // Avoid division by zero
-                
-                val currentRxBytes = TrafficStats.getTotalRxBytes()
-                // Calculate delta from baseline (only measure during test)
-                val rxDelta = (currentRxBytes - lastRxBytes).toFloat()
-                
-                // Calculate speed in bytes per second
-                val speedBps = (rxDelta / timeDelta) * 1000f
-                
-                // Simulate realistic speed increase (like Ookla) - smooth acceleration
-                val progress = i.toFloat() / downloadUpdates
-                // Use easing function for smooth acceleration and deceleration
-                val easedProgress = when {
-                    progress < 0.3f -> progress / 0.3f * 0.5f // Slow start
-                    progress < 0.7f -> 0.5f + (progress - 0.3f) / 0.4f * 0.4f // Fast middle
-                    else -> 0.9f + (progress - 0.7f) / 0.3f * 0.1f // Slow end
-                }
-                
-                val simulatedSpeedBps = if (speedBps < 1000f) {
-                    // Simulate realistic download speed progression
-                    (targetDownloadSpeedMbps * easedProgress * 1024 * 1024).coerceAtLeast(0f)
-                } else {
-                    // Use actual measured speed if available
-                    speedBps.coerceAtMost(targetDownloadSpeedMbps * 1024 * 1024)
-                }
-                
-                // Update download speed (this shows in top Download card)
-                _downloadSpeed.value = simulatedSpeedBps
-                
-                // Track max speed for final value
-                val speedInMbps = simulatedSpeedBps / (1024 * 1024)
-                if (speedInMbps > maxDownloadSpeed) {
-                    maxDownloadSpeed = speedInMbps
-                }
-                
-                // Update speedometer (convert bytes/s to mb/s, then map to 0-100)
-                _speedometerValue.value = speedInMbps.coerceIn(0f, 100f)
-                
-                lastRxBytes = currentRxBytes
-                lastTime = currentTime
-                delay(updateInterval)
+
+    private suspend fun runDnsBenchmarkOnly() {
+        try {
+            runDnsLatencyTest()
+        } catch (_: Exception) { }
+        delay(400)
+    }
+
+    private suspend fun runDnsLatencyTest() = withContext(Dispatchers.IO) {
+        val targets = listOf(
+            DnsLatencyResult("Cloudflare DNS", "1.1.1.1", "1.0.0.1"),
+            DnsLatencyResult("Google DNS", "8.8.8.8", "8.8.4.4"),
+            DnsLatencyResult("Alternate DNS", "76.76.2.0", "76.76.10.0"),
+            DnsLatencyResult("Quad9", "9.9.9.9", "149.112.112.112"),
+            DnsLatencyResult("Level3 DNS", "4.2.2.1", "4.2.2.2"),
+            DnsLatencyResult("SafeDNS", "195.46.39.39", "195.46.39.40"),
+            DnsLatencyResult("Open DNS", "208.67.222.222", "208.67.220.220"),
+            DnsLatencyResult("Yandex DNS", "77.88.8.8", "77.88.8.1"),
+            DnsLatencyResult("Comodo Secure DNS", "8.26.56.26", "8.20.247.20"),
+            DnsLatencyResult("DNS.Watch", "84.200.69.80", "84.200.70.40"),
+            DnsLatencyResult("UncensoredDNS", "91.239.100.100", "89.233.43.71")
+        )
+        val results = mutableListOf<DnsLatencyResult>()
+        for (target in targets) {
+            try {
+                val latency = measureDnsLatency(target.primaryIp, target.secondaryIp)
+                results.add(target.copy(latencyMs = latency))
+            } catch (_: Exception) {
+                results.add(target.copy(latencyMs = null))
             }
-            
-            // Store final download speed (this will show in Download card after test completes)
-            val finalDownloadSpeedBps = maxDownloadSpeed * 1024 * 1024
-            _downloadSpeed.value = finalDownloadSpeedBps
-            
-            // Brief pause between download and upload
-            delay(1000)
-            
-            // Phase 2: Upload speed test
-            val uploadTestDuration = 8000L // 8 seconds for upload test
-            val uploadUpdates = (uploadTestDuration / updateInterval).toInt()
-            lastTime = System.currentTimeMillis()
-            lastTxBytes = TrafficStats.getTotalTxBytes()
-            
-            // Generate random target upload speed (usually lower than download)
-            val targetUploadSpeedMbps = 12f + Random.nextFloat() * 13f // Random between 12-25 mbps
-            var maxUploadSpeed = 0f
-            
-            // Measure upload speed
-            for (i in 0..uploadUpdates) {
-                val currentTime = System.currentTimeMillis()
-                val timeDelta = (currentTime - lastTime).coerceAtLeast(1L)
-                
-                val currentTxBytes = TrafficStats.getTotalTxBytes()
-                val txDelta = (currentTxBytes - lastTxBytes).toFloat()
-                
-                // Calculate upload speed in bytes per second
-                val uploadSpeedBps = (txDelta / timeDelta) * 1000f
-                
-                // Simulate realistic upload speed with smooth progression
-                val progress = i.toFloat() / uploadUpdates
-                val easedProgress = when {
-                    progress < 0.3f -> progress / 0.3f * 0.5f // Slow start
-                    progress < 0.7f -> 0.5f + (progress - 0.3f) / 0.4f * 0.4f // Fast middle
-                    else -> 0.9f + (progress - 0.7f) / 0.3f * 0.1f // Slow end
-                }
-                
-                val simulatedUploadSpeedBps = if (uploadSpeedBps < 1000f) {
-                    // Simulate realistic upload speed (usually lower than download)
-                    (targetUploadSpeedMbps * easedProgress * 1024 * 1024).coerceAtLeast(0f)
-                } else {
-                    // Use actual measured speed if available
-                    uploadSpeedBps.coerceAtMost(targetUploadSpeedMbps * 1024 * 1024)
-                }
-                
-                // Update upload speed (this shows in top Upload card)
-                _uploadSpeed.value = simulatedUploadSpeedBps
-                
-                // Track max upload speed for final value
-                val uploadSpeedInMbps = simulatedUploadSpeedBps / (1024 * 1024)
-                if (uploadSpeedInMbps > maxUploadSpeed) {
-                    maxUploadSpeed = uploadSpeedInMbps
-                }
-                
-                lastTxBytes = currentTxBytes
-                lastTime = currentTime
-                delay(updateInterval)
+            withContext(Dispatchers.Main) {
+                _dnsResults.value = results.sortedBy { it.latencyMs ?: Long.MAX_VALUE }
             }
-            
-            // Store final upload speed (this will show in Upload card after test completes)
-            val finalUploadSpeedBps = maxUploadSpeed * 1024 * 1024
-            _uploadSpeed.value = finalUploadSpeedBps
-            
-            // Keep final speeds displayed - speedometer shows download speed
-            _speedometerValue.value = maxDownloadSpeed.coerceIn(0f, 100f)
-            delay(2000)
-            
-            // Test completed - transition to completed state
-            // Final speeds are already stored in _downloadSpeed and _uploadSpeed
-            // These will be displayed in the top cards
-            _connectionState.value = SpeedTestConnectionState.TEST_COMPLETED
         }
+        delay(200)
+    }
+
+    private fun measureDnsLatency(primaryIp: String, secondaryIp: String?): Long? {
+        val latencies = listOfNotNull(primaryIp, secondaryIp)
+            .mapNotNull { measureSingleDnsServerLatency(it) }
+        if (latencies.isEmpty()) return null
+        return latencies.minOrNull()
+    }
+
+    private fun measureSingleDnsServerLatency(ip: String): Long? {
+        val socket = DatagramSocket()
+        return try {
+            socket.soTimeout = DNS_QUERY_TIMEOUT_MS
+            val samples = mutableListOf<Long>()
+            repeat(DNS_ATTEMPTS) { attempt ->
+                val txId = ((System.nanoTime() + attempt) and 0xFFFF).toInt()
+                val query = buildDnsQuery(txId, DNS_TEST_DOMAIN)
+                val request = DatagramPacket(query, query.size).apply {
+                    socketAddress = InetSocketAddress(ip, 53)
+                }
+                val responseBytes = ByteArray(512)
+                val response = DatagramPacket(responseBytes, responseBytes.size)
+                val start = System.nanoTime()
+                socket.send(request)
+                socket.receive(response)
+                val elapsedMs = ((System.nanoTime() - start) / 1_000_000).coerceAtLeast(0L)
+                if (isValidDnsResponse(responseBytes, response.length, txId)) {
+                    samples.add(elapsedMs)
+                }
+            }
+            if (samples.isEmpty()) null else (samples.sum() / samples.size)
+        } catch (_: Exception) {
+            null
+        } finally {
+            runCatching { socket.close() }
+        }
+    }
+
+    private fun buildDnsQuery(transactionId: Int, domain: String): ByteArray {
+        val labels = domain.split('.').filter { it.isNotBlank() }
+        val qnameSize = labels.sumOf { it.length + 1 } + 1
+        val packet = ByteArray(12 + qnameSize + 4)
+        packet[0] = ((transactionId shr 8) and 0xFF).toByte()
+        packet[1] = (transactionId and 0xFF).toByte()
+        packet[2] = 0x01
+        packet[3] = 0x00
+        packet[4] = 0x00
+        packet[5] = 0x01
+        packet[6] = 0x00
+        packet[7] = 0x00
+        packet[8] = 0x00
+        packet[9] = 0x00
+        packet[10] = 0x00
+        packet[11] = 0x00
+        var offset = 12
+        for (label in labels) {
+            val bytes = label.toByteArray(Charsets.US_ASCII)
+            packet[offset++] = bytes.size.toByte()
+            for (b in bytes) packet[offset++] = b
+        }
+        packet[offset++] = 0x00
+        packet[offset++] = 0x00
+        packet[offset++] = 0x01
+        packet[offset++] = 0x00
+        packet[offset] = 0x01
+        return packet
+    }
+
+    private fun isValidDnsResponse(data: ByteArray, length: Int, txId: Int): Boolean {
+        if (length < 12) return false
+        val respId = ((data[0].toInt() and 0xFF) shl 8) or (data[1].toInt() and 0xFF)
+        val flags = ((data[2].toInt() and 0xFF) shl 8) or (data[3].toInt() and 0xFF)
+        val isResponse = (flags and 0x8000) != 0
+        val responseCode = flags and 0x000F
+        return respId == txId && isResponse && responseCode == 0
     }
 
     fun resetTest() {
         _connectionState.value = SpeedTestConnectionState.IDLE
-        _downloadSpeed.value = 0.00f
-        _uploadSpeed.value = 0.00f
-        _speedometerValue.value = 0f
+        _dnsResults.value = emptyList()
     }
-    
+
     fun restartTest() {
         resetTest()
         startConnection()

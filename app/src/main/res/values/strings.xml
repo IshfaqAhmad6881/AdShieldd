@@ -1,3 +1,224 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
     <string name="app_name">AdShield</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_save">Save</string>
+    <string name="common_ok">OK</string>
+    <string name="common_connected">Connected</string>
+    <string name="common_not_connected">Not Connected</string>
+    <string name="common_navigate">Navigate</string>
+    <string name="common_soon">Soon</string>
+
+    <string name="share_referral_chooser_title">Share AdShield with friends</string>
+    <string name="share_referral_message">Check out %1$s - Secure your online privacy!\n\n%2$s</string>
+
+    <string name="dns_prompt_title">Allow app to set DNS automatically</string>
+    <string name="dns_prompt_message">To set DNS from the app (no manual step), allow permission once:\n\n1. Connect phone to PC with USB\n2. Enable USB debugging (Settings -&gt; Developer options)\n3. On PC, run this command:\n\n%1$s\n\nAfter this, the app sets DNS automatically when you connect.</string>
+    <string name="dns_prompt_copy_command">Copy command</string>
+
+    <string name="network_unavailable">Internet is not available</string>
+    <string name="network_restored">Internet restored</string>
+    <string name="network_transport_wifi">WiFi</string>
+    <string name="network_transport_mobile_data">Mobile Data</string>
+    <string name="network_transport_ethernet">Ethernet</string>
+    <string name="network_transport_vpn">VPN</string>
+    <string name="network_carrier">Carrier Network</string>
+    <string name="network_ethernet_link">Ethernet Link</string>
+    <string name="network_secure_tunnel">Secure Tunnel</string>
+    <string name="network_active_network">Active Network</string>
+    <string name="network_wifi_connected">WiFi Connected</string>
+    <string name="network_wifi_permission_required">Allow location permission to view WiFi name</string>
+    <string name="network_wifi_permission_cta">Allow location permission for WiFi name</string>
+
+    <string name="home_menu">Menu</string>
+    <string name="home_premium">Premium</string>
+    <string name="home_go_premium">Go Premium</string>
+    <string name="home_download">Download</string>
+    <string name="home_upload">Upload</string>
+    <string name="home_reward_watch_ad">Reward - Watch ad, get +30 min</string>
+    <string name="home_time_left">Time left: %1$s</string>
+    <string name="home_start">Start</string>
+    <string name="home_stop">Stop</string>
+    <string name="home_safely_connected">Safely connected</string>
+    <string name="home_server_dns">Server / DNS</string>
+    <string name="home_select_location">Select Location</string>
+    <string name="home_choose_dns_server">Choose your DNS server</string>
+
+    <string name="settings_secured_until">You are secured until</string>
+    <string name="settings_connection_expires_in">Connection expires in %1$s</string>
+    <string name="settings_preferences">Preferences</string>
+    <string name="settings_preferences_caption">Customize your settings</string>
+    <string name="settings_speed_test">Speed Test</string>
+    <string name="settings_speed_test_caption">Check your connection speed</string>
+    <string name="settings_refer_friends">Refer Friends</string>
+    <string name="settings_refer_friends_caption">Share with your friends</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_caption">Choose app language</string>
+    <string name="settings_advanced">Advanced</string>
+    <string name="settings_advanced_caption">Network and DNS diagnostics</string>
+    <string name="settings_app_version">App version %1$s</string>
+    <string name="settings_expire">Expire</string>
+    <string name="settings_remaining">Remaining</string>
+    <string name="settings_feedback">Feedback</string>
+    <string name="settings_feedback_caption">Tell us what we can improve</string>
+
+    <string name="feedback_title">Send feedback</string>
+    <string name="feedback_subtitle">We read every message</string>
+    <string name="feedback_hint">Describe your idea, issue, or question…</string>
+    <string name="feedback_send">Send via email</string>
+    <!-- Bracket prefix + keywords so Gmail filter (e.g. “AdShield”) is easy to set. -->
+    <string name="feedback_email_subject">[AdShield · Support] User feedback — please read — filter lagana asaan</string>
+    <!-- Shown at top of email so providers see transactional/support context (not marketing). -->
+    <string name="feedback_email_body_preamble">Message type: app feedback (please keep in Primary / Important)\nApp: AdShield | Version %1$s\nDevice: %2$s | Android %3$s\n—\n</string>
+    <string name="feedback_chooser_title">Send email</string>
+    <string name="feedback_empty">Please write your feedback first. Empty messages cannot be sent.</string>
+    <string name="feedback_send_validation_title">Cannot send</string>
+    <string name="feedback_min_chars_message">Please write at least %1$d characters before sending. You currently have %2$d characters.</string>
+    <string name="feedback_no_email_app">No email app found</string>
+    <string name="feedback_thank_you_title">Thank you!</string>
+    <string name="feedback_thank_you_message">Thanks! Important: in the mail app, check that To is %1$s, then tap Send. Until you press Send, we do not receive anything. We read every message that arrives.</string>
+    <string name="feedback_opened_mail_app">Mail app opened — To should be %1$s. Tap Send to deliver your feedback.</string>
+    <string name="feedback_thank_you_ok">OK</string>
+    <string name="feedback_support_email">developertesting141@gmail.com</string>
+
+    <string name="preferences_title">Preferences</string>
+    <string name="preferences_appearance">Appearance</string>
+    <string name="preferences_theme">Theme</string>
+    <string name="preferences_theme_subtitle">Light, dark or follow system</string>
+    <string name="preferences_theme_follow_system">Follow system</string>
+    <string name="preferences_theme_light_mode">Light mode</string>
+    <string name="preferences_theme_dark_mode">Dark mode</string>
+    <string name="preferences_open_options">Open options</string>
+    <string name="preferences_notifications">Notifications</string>
+    <string name="preferences_notifications_subtitle">While connected, Android shows an ongoing “AdShield — Connected” status. It keeps DNS protection running in the background; leave it until you disconnect in the app.</string>
+    <string name="preferences_data_storage">Data &amp; storage</string>
+    <string name="preferences_data_storage_subtitle">Cache and saved data</string>
+
+    <string name="language_screen_title">Language</string>
+    <string name="language_screen_subtitle">Choose your preferred app language</string>
+    <string name="language_change_confirm_title">Change language?</string>
+    <string name="language_change_confirm_message">The app will use %1$s after you confirm.</string>
+    <string name="common_yes">Yes</string>
+    <string name="common_no">No</string>
+    <string name="common_confirm">Confirm</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_continue">Continue</string>
+    <string name="common_not_now">Not now</string>
+
+    <string name="speed_test_title">Speed Test</string>
+    <string name="speed_test_history">History</string>
+    <string name="speed_test_connecting">Connecting</string>
+    <string name="speed_test_preparing">Preparing test…</string>
+    <string name="speed_test_testing_connection">Testing your connection...</string>
+    <string name="speed_test_testing_dns">TESTING DNS SERVERS...</string>
+    <string name="speed_test_dns_benchmark">Public DNS servers — real latency (UDP)</string>
+    <string name="speed_test_start">Start Test</string>
+    <string name="speed_test_test_again">Test Again</string>
+    <string name="speed_test_needle">Speed Needle</string>
+    <string name="speed_test_active">Active</string>
+    <string name="speed_test_use_it">Use It</string>
+
+    <string name="advanced_title">Advanced</string>
+    <string name="advanced_subtitle">Live network diagnostics</string>
+    <string name="advanced_share">Share</string>
+    <string name="advanced_status">Status</string>
+    <string name="advanced_provider">Provider</string>
+    <string name="advanced_connection_type">Connection Type</string>
+    <string name="advanced_connection_name">Connection Name</string>
+    <string name="advanced_custom_dns_list">Custom DNS List</string>
+    <string name="advanced_custom_dns_empty">You can add custom DNS</string>
+    <string name="advanced_add_dns">Add DNS</string>
+
+    <string name="custom_dns_name">Custom DNS</string>
+    <string name="custom_dns_title">Add Custom DNS</string>
+    <string name="custom_dns_subtitle">Enter hostname (e.g. dns.example.com) or IP addresses for VPN</string>
+    <string name="custom_dns_hostname_label">DNS hostname (Private DNS)</string>
+    <string name="custom_dns_hostname_placeholder">e.g. dns.adguard-dns.com</string>
+    <string name="custom_dns_primary_ip_label">Primary IP (for VPN)</string>
+    <string name="custom_dns_primary_ip_placeholder">e.g. 94.140.14.14</string>
+    <string name="custom_dns_secondary_ip_label">Secondary IP (optional)</string>
+    <string name="custom_dns_secondary_ip_placeholder">e.g. 94.140.15.15</string>
+    <string name="custom_dns_profile_label">Profile name (optional)</string>
+    <string name="custom_dns_profile_label_placeholder">e.g. My home DNS</string>
+    <string name="custom_dns_saved_profiles">Saved profiles</string>
+    <string name="custom_dns_use_this">Use this DNS</string>
+    <string name="custom_dns_delete">Delete</string>
+    <string name="custom_dns_active_badge">Active</string>
+    <string name="custom_dns_saved_toast">Profile saved</string>
+    <string name="custom_dns_save_confirm_title">Save DNS profile?</string>
+    <string name="custom_dns_save_confirm_message">This will add the profile to your saved list. You can use or delete it later.</string>
+    <string name="custom_dns_premium_limit_title">Premium required</string>
+    <string name="custom_dns_premium_limit_message">The free version allows up to 2 custom DNS profiles. Upgrade to Premium to save and use more.</string>
+    <string name="custom_dns_delete_confirm_title">Delete profile?</string>
+    <string name="custom_dns_delete_confirm_message">This DNS entry will be removed from your list.</string>
+    <string name="custom_dns_validation_hostname">Enter a valid domain (e.g. dns.example.com)</string>
+    <string name="custom_dns_validation_ip">Enter a valid IPv4 address (e.g. 1.1.1.1)</string>
+    <string name="custom_dns_validation_need_one">Enter a hostname or a primary IP (or both)</string>
+
+    <string name="choose_server_title">Choose server</string>
+    <string name="choose_server_selected">Selected</string>
+
+    <string name="terms_intro_title">Terms of Use &amp; Privacy Policy</string>
+    <string name="terms_intro_description">Please read and accept our Terms of Use and Privacy Policy to continue using AdShield.</string>
+    <string name="terms_intro_accept">Accept</string>
+    <string name="terms_of_use_title">Terms of Use</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="terms_accept_all">Accept all</string>
+
+    <string name="splash_tagline">Protect Your Privacy</string>
+
+    <string name="premium_subtitle">Ad-free experience and premium support</string>
+    <string name="premium_plan_monthly">1 MONTH</string>
+    <string name="premium_plan_yearly">1 YEAR</string>
+    <string name="premium_price_suffix_month"> / month</string>
+    <string name="premium_period_suffix_year"> / year</string>
+    <string name="premium_period_suffix_week"> / week</string>
+    <string name="premium_period_suffix_quarter"> / quarter</string>
+    <string name="premium_hero_line_yearly">Yearly · %1$s</string>
+    <string name="premium_hero_line_monthly">Monthly · %1$s</string>
+    <string name="common_bullet">•</string>
+    <string name="premium_upgrade">Upgrade</string>
+    <string name="premium_yearly_subline">Rs 41.58 / month</string>
+    <string name="premium_best_value">BEST VALUE</string>
+    <string name="premium_features">Pro features</string>
+    <string name="premium_no_ads">No Ads</string>
+    <string name="premium_no_ads_subtitle">Ad-free app experience</string>
+    <string name="premium_vip_support">VIP support</string>
+    <string name="premium_vip_support_subtitle">24/7 priority customer support</string>
+    <string name="premium_try_free">Try free for 3 days</string>
+    <string name="premium_after_trial">Then Rs 499 / year. Cancel anytime.</string>
+    <string name="premium_cancel_anytime">Cancel anytime</string>
+    <string name="premium_restore_purchase">Restore purchase</string>
+    <string name="premium_legal">Subscriptions are billed by Google Play. They renew automatically until you cancel in Play Store → Payments &amp; subscriptions. Trials and pricing are shown before you confirm purchase.</string>
+    <string name="premium_connecting_play">Connecting to Google Play…</string>
+    <string name="premium_play_ready">Prices from your region</string>
+    <string name="premium_subscribe_now">Subscribe with Google Play</string>
+    <string name="premium_select_plan">Choose your plan</string>
+    <string name="premium_billed_monthly">Billed every month</string>
+    <string name="premium_billed_yearly">Best value — billed once per year</string>
+    <string name="premium_already_title">You have Premium</string>
+    <string name="premium_already_subtitle">Thanks for supporting AdShield. Ads and limits for subscribers are removed where applicable.</string>
+    <string name="premium_restore_none">No active subscription found for this Google account.</string>
+    <string name="premium_restore_failed">Could not restore purchases.</string>
+    <string name="premium_console_hint">Create subscription products with IDs «premium_monthly» and «premium_annual» in Play Console to see live prices.</string>
+
+    <!-- Shown in system UI / Play; keep in sync with DnsVpnService + Play Console special-use declaration -->
+    <!-- Play: separate from generic Terms — required prominent disclosure for VpnService (User Data policy). -->
+    <string name="vpn_prominent_title">VPN connection (DNS protection)</string>
+    <string name="vpn_prominent_body">AdShield uses Android’s VPN permission only to create a local network tunnel so your DNS requests can be sent through the ad-blocking server you choose. We do not use this to monetize, sell, or redirect traffic from other apps for advertising purposes.\n\nYou stay in control: connect and disconnect in this app. While connected, Android may show an ongoing notification and the system key icon — that is required so protection can keep running in the background.\n\nTraffic handling depends on the DNS provider you select; see their terms and our Privacy Policy. If you do not agree, tap “Not now” and do not connect.</string>
+    <string name="vpn_prominent_accept">I understand — continue</string>
+    <string name="vpn_prominent_decline">Not now</string>
+
+    <string name="vpn_service_manifest_description">Keeps your DNS protection active while you are connected.</string>
+    <string name="vpn_special_use_fgs_subtype" translatable="false">AdShield runs a short-lived local VPN tunnel for DNS only. A foreground service is required so blocking stays active when the app is in the background. An ongoing notification shows connection status as required by Android; the user should disconnect inside the app before expecting the tunnel to stop.</string>
+    <string name="vpn_notification_channel_name">Connection status</string>
+    <string name="vpn_notification_channel_description">Required while connected: Android needs this ongoing notification so DNS protection can keep running in the background. You should disconnect in the app before clearing it. Expand the notification for details.</string>
+    <string name="vpn_notification_title">AdShield — Connected</string>
+    <string name="vpn_notification_text">%1$s • Protection active in background. Tap to open. Disconnect in app to stop.</string>
+    <string name="vpn_notification_big_text">Server: %1$s. AdShield is connected. This notification stays visible while protection runs so Android can keep the service in the background (like other VPN apps). You normally should not dismiss it until you tap Disconnect in the app—otherwise DNS blocking may stop. If your phone allows swiping it away, disconnect first.</string>
+    <string name="notification_permission_rationale_title">Background connection</string>
+    <string name="notification_permission_rationale_message">When you connect, AdShield needs permission to show notifications. Android uses this for the ongoing status you see while protection runs in the background. That notice explains you are connected and usually cannot be removed safely until you disconnect in the app.</string>
+    <string name="vpn_session_name">AdShield DNS</string>
+    <string name="clipboard_label_dns">DNS hostname</string>
 </resources>

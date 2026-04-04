@@ -9,10 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.FusionCoreTech.myapplication.R
 import com.FusionCoreTech.myapplication.ui.theme.*
 
 @Composable
@@ -20,19 +22,18 @@ fun TermsIntroScreen(
     isDarkMode: Boolean,
     onAccept: () -> Unit
 ) {
-    val bg = if (isDarkMode) DarkBackgroundGrey else BackgroundGrey
     val textDark = if (isDarkMode) DarkTextDark else TextDark
     val textLight = if (isDarkMode) DarkTextLight else TextLight
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bg)
+            .background(adShieldScreenBackgroundBrush(isDarkMode))
             .padding(24.dp)
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            text = "Terms of Use & Privacy Policy",
+            text = stringResource(R.string.terms_intro_title),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = textDark,
@@ -41,7 +42,7 @@ fun TermsIntroScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Please read and accept our Terms of Use and Privacy Policy to continue using AdShield.",
+            text = stringResource(R.string.terms_intro_description),
             fontSize = 15.sp,
             color = textLight,
             textAlign = TextAlign.Center,
@@ -58,7 +59,7 @@ fun TermsIntroScreen(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
         ) {
             Text(
-                text = "Accept",
+                text = stringResource(R.string.terms_intro_accept),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White

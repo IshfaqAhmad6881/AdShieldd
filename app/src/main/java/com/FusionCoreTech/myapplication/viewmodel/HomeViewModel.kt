@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.FusionCoreTech.myapplication.dns.SelectedDnsPrefs
 import com.FusionCoreTech.myapplication.model.ConnectionState
 import com.FusionCoreTech.myapplication.model.Location
 import kotlinx.coroutines.Job
@@ -15,13 +16,17 @@ import kotlinx.coroutines.launch
 private const val PREFS_NAME = "adshield_connection"
 private const val KEY_REMAINING_SECONDS = "remaining_seconds"
 private const val DEFAULT_SESSION_SECONDS = 30 * 60 // 30 minutes
-private const val SMOOTH_ALPHA = 0.22f // 0–1: smaller = slower ramp, number ahista ahista badhega
+/** Seconds added to remaining time each time user completes a rewarded ad on Home. */
+private const val REWARD_AD_SECONDS = 30 * 60
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = application.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
 
     private fun loadSavedRemainingSeconds(): Int {
+        if (!prefs.contains(KEY_REMAINING_SECONDS)) {
+            prefs.edit().putInt(KEY_REMAINING_SECONDS, DEFAULT_SESSION_SECONDS).apply()
+        }
         return prefs.getInt(KEY_REMAINING_SECONDS, DEFAULT_SESSION_SECONDS).coerceAtLeast(0)
     }
 
@@ -42,21 +47,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     )
     val connectionState: State<ConnectionState> = _connectionState
 
-    private val _selectedLocation = mutableStateOf(Location(name = "Open DNS"))
+    private val _selectedLocation = mutableStateOf(
+        Location(name = SelectedDnsPrefs.getSelectedName(application))
+    )
     val selectedLocation: State<Location> = _selectedLocation
 
     fun selectLocation(location: Location) {
         _selectedLocation.value = location
+        SelectedDnsPrefs.saveSelectedName(getApplication(), location.name)
     }
 
     private var countdownJob: Job? = null
     private var speedUpdateJob: Job? = null
-    private var smoothedDownloadSpeed = 0f
-    private var smoothedUploadSpeed = 0f
 
-    /** Add 30 minutes when user earns reward (e.g. after watching ad). Saves and updates UI. */
+    /** Add time when user earns reward (after watching one rewarded ad). Saves and updates UI. */
     fun addTimeFromReward() {
-        val addSeconds = 30 * 60 // 30 minutes
+        val addSeconds = REWARD_AD_SECONDS
         val newTotal = _remainingSeconds.value + addSeconds
         _remainingSeconds.value = newTotal
         saveRemainingSeconds(newTotal)
@@ -72,8 +78,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             countdownJob?.cancel()
             speedUpdateJob?.cancel()
             saveRemainingSeconds(_remainingSeconds.value)
-            smoothedDownloadSpeed = 0f
-            smoothedUploadSpeed = 0f
             _connectionState.value = current.copy(
                 isConnected = false,
                 downloadSpeed = 0.00f,
@@ -81,8 +85,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 timer = "00:00:00"
             )
         } else {
-            smoothedDownloadSpeed = 0f
-            smoothedUploadSpeed = 0f
             var startSeconds = _remainingSeconds.value
             if (startSeconds <= 0) {
                 startSeconds = DEFAULT_SESSION_SECONDS
@@ -112,8 +114,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
             // Time ended – disconnect
             speedUpdateJob?.cancel()
-            smoothedDownloadSpeed = 0f
-            smoothedUploadSpeed = 0f
             _connectionState.value = _connectionState.value.copy(
                 isConnected = false,
                 downloadSpeed = 0f,
@@ -130,30 +130,31 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun startSpeedUpdates() {
         speedUpdateJob?.cancel()
         speedUpdateJob = viewModelScope.launch {
-            var lastRxBytes: Long = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
-            var lastTxBytes: Long = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
+            fun totalRx(): Long = TrafficStats.getTotalRxBytes().let { if (it < 0L) 0L else it }
+            fun totalTx(): Long = TrafficStats.getTotalTxBytes().let { if (it < 0L) 0L else it }
+
+            var lastRxBytes: Long = totalRx()
+            var lastTxBytes: Long = totalTx()
             var lastTimeMs: Long = System.currentTimeMillis()
-            delay(300L)
+
             while (_connectionState.value.isConnected) {
+                delay(1000L)
                 val now = System.currentTimeMillis()
-                val rxBytes = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
-                val txBytes = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
+                val rxBytes = totalRx()
+                val txBytes = totalTx()
                 val elapsedSec = (now - lastTimeMs) / 1000.0
                 if (elapsedSec > 0) {
                     val rawDown = ((rxBytes - lastRxBytes).toFloat() / elapsedSec.toFloat()).coerceAtLeast(0f)
                     val rawUp = ((txBytes - lastTxBytes).toFloat() / elapsedSec.toFloat()).coerceAtLeast(0f)
-                    smoothedDownloadSpeed = SMOOTH_ALPHA * rawDown + (1f - SMOOTH_ALPHA) * smoothedDownloadSpeed
-                    smoothedUploadSpeed = SMOOTH_ALPHA * rawUp + (1f - SMOOTH_ALPHA) * smoothedUploadSpeed
                     val current = _connectionState.value
                     _connectionState.value = current.copy(
-                        downloadSpeed = smoothedDownloadSpeed,
-                        uploadSpeed = smoothedUploadSpeed
+                        downloadSpeed = rawDown,
+                        uploadSpeed = rawUp
                     )
                 }
                 lastRxBytes = rxBytes
                 lastTxBytes = txBytes
                 lastTimeMs = now
-                delay(500L)
             }
         }
     }

@@ -13,6 +13,8 @@ import androidx.core.app.ServiceCompat
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.FusionCoreTech.myapplication.MainActivity
+import com.FusionCoreTech.myapplication.R
+import com.FusionCoreTech.myapplication.dns.SelectedDnsPrefs
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.DatagramPacket
@@ -43,9 +45,14 @@ class DnsVpnService : VpnService() {
             return START_NOT_STICKY
         }
 
-        val serverName = intent?.getStringExtra(EXTRA_SERVER_NAME) ?: "AdGuard DNS"
-        val dnsIps = com.FusionCoreTech.myapplication.dns.DnsConfig.getDnsServerIps(serverName)
-            ?: com.FusionCoreTech.myapplication.dns.DnsConfig.ADGUARD_DNS_IPS
+        val serverName = intent?.getStringExtra(EXTRA_SERVER_NAME)
+            ?: SelectedDnsPrefs.DEFAULT_SERVER_NAME
+        val dnsIps = loadDnsIpsForServer(serverName)
+        if (dnsIps.isEmpty()) {
+            Log.e(TAG, "No DNS IPs for server: $serverName")
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         val notification = createNotification(serverName)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -78,13 +85,17 @@ class DnsVpnService : VpnService() {
 
     private fun createNotification(serverName: String): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // DEFAULT keeps the VPN status visible (LOW often sits in “silent/minimized” and feels removed).
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Connection status",
-                NotificationManager.IMPORTANCE_LOW
+                getString(R.string.vpn_notification_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 setShowBadge(false)
-                description = "Shows when DNS/VPN is connected (like VPN notification)"
+                description = getString(R.string.vpn_notification_channel_description)
+                setSound(null, null)
+                enableVibration(false)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
         }
@@ -92,13 +103,56 @@ class DnsVpnService : VpnService() {
             this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("AdShield – Connected")
-            .setContentText("$serverName • Ads blocked. Tap to open.")
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(getString(R.string.vpn_notification_title))
+            .setContentText(getString(R.string.vpn_notification_text, serverName))
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .setBigContentTitle(getString(R.string.vpn_notification_title))
+                    .bigText(getString(R.string.vpn_notification_big_text, serverName))
+            )
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentIntent(open)
             .setOngoing(true)
-            .build()
+            .setAutoCancel(false)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setShowWhen(false)
+            .setOnlyAlertOnce(true)
+        // Android 14+: keep FGS notification visible and non-deferred when user switches apps / recents.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+        }
+        return builder.build()
+    }
+
+    private fun loadDnsIpsForServer(serverName: String): List<String> {
+        val staticOrCustom = if (serverName == "Custom DNS") {
+            com.FusionCoreTech.myapplication.dns.CustomDnsPrefs.getDnsServerIps(this)
+        } else {
+            com.FusionCoreTech.myapplication.dns.DnsConfig.getDnsServerIps(serverName)
+        }
+        if (!staticOrCustom.isNullOrEmpty()) return staticOrCustom
+
+        val host = com.FusionCoreTech.myapplication.dns.DnsConfig.getDnsResolverHostForVpn(serverName)
+        if (!host.isNullOrBlank()) {
+            val resolved = resolveHostToIpv4(host)
+            if (resolved.isNotEmpty()) return resolved
+        }
+
+        val fallback = com.FusionCoreTech.myapplication.dns.DnsConfig.getDnsIpv4Fallback(serverName)
+        return fallback.orEmpty()
+    }
+
+    private fun resolveHostToIpv4(host: String): List<String> = try {
+        InetAddress.getAllByName(host)
+            .mapNotNull { it.hostAddress }
+            .filter { it.indexOf(':') < 0 }
+            .distinct()
+            .take(6)
+    } catch (e: Exception) {
+        Log.w(TAG, "Could not resolve $host", e)
+        emptyList()
     }
 
     private fun runVpn(dnsIps: List<String>) {
@@ -107,9 +161,14 @@ class DnsVpnService : VpnService() {
         val primaryAddr = try { InetAddress.getByName(primaryDns) } catch (_: Exception) { return }
 
         val builder = Builder()
-            .setSession("AdShield DNS")
+            .setSession(getString(R.string.vpn_session_name))
             .setMtu(1500)
             .addAddress("10.0.0.2", 32)
+
+        // So that when user connects, only this app is unaffected: its ads keep loading
+        try {
+            builder.addDisallowedApplication(packageName)
+        } catch (_: Exception) { /* ignore if not supported */ }
 
         dnsIps.forEach {
             builder.addDnsServer(it)
@@ -218,7 +277,8 @@ class DnsVpnService : VpnService() {
         const val ACTION_STOP = "com.FusionCoreTech.myapplication.vpn.STOP"
         const val EXTRA_SERVER_NAME = "server_name"
         private const val TAG = "DnsVpnService"
-        private const val CHANNEL_ID = "adshield_dns"
+        /** v2: IMPORTANCE_DEFAULT so ongoing VPN status stays clearly visible until disconnect. */
+        private const val CHANNEL_ID = "adshield_dns_vpn_v2"
         private const val NOTIFICATION_ID = 9001
     }
 }

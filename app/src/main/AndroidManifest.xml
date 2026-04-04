@@ -2,12 +2,71 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Optional: grant via ADB to set Private DNS automatically: adb shell pm grant <package> android.permission.WRITE_SECURE_SETTINGS -->
-    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <!--
+      Google Play / device review (AdShield):
+      FOREGROUND_SERVICE + FOREGROUND_SERVICE_SPECIAL_USE: DnsVpnService is a user-approved VPN
+      (BIND_VPN_SERVICE) and must run in the foreground while connected so DNS protection continues
+      in the background; Android requires an ongoing status notification.
+      POST_NOTIFICATIONS (API 33+): show connection status and meet FGS visibility rules.
+      Service android:stopWithTask="false": tunnel is intended to stay up until user disconnects in-app.
+      specialUse justification: @string/vpn_special_use_fgs_subtype (also paste in Play Console).
+      VPN apps: complete Play Console “VpnService” declaration + short review video; Google may require
+      an Organization developer account for VPN-category apps (check current Play policy center).
+    -->
+    <!--
+      All runtime permissions actually requested by the app or merged SDKs — keep aligned with
+      Play “App content”, Data safety, and the in-app Privacy Policy.
+    -->
+
+    <!-- Optional (power users): adb shell pm grant <package> android.permission.WRITE_SECURE_SETTINGS
+         Not granted through Play; declared so manual grant works if user follows in-app DNS instructions. -->
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- DNS resolution, speed test, config fetch, ads, billing -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- ConnectivityManager / network callbacks (InternetStatusSnackbar, Advanced diagnostics) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- Foreground-only: Wi‑Fi SSID / network labels on Advanced screen (system requirement on many OEMs). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- DnsVpnService foreground tunnel + status notification -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Android 13+ (API 33+): post connection / VPN notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Google Play Billing (subscriptions / in-app) -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+
+    <!-- AdMob: advertising ID on supported API levels (Play policies / UMP as applicable) -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
+    <!-- Commonly merged from Play services / ads; explicit for clarity on Play “App content” review. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Devices without VPN APIs still install; connect flow uses system VPN APIs when present. -->
+    <uses-feature
+        android:name="android.software.vpn"
+        android:required="false" />
+
+    <!-- Android 11+: so Gmail / other handlers resolve for feedback (mailto:) and share intents. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -15,21 +74,23 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AdShield">
-        <!-- Required for Google Mobile Ads SDK - use your own AdMob App ID for production -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-7882326227440171~1048114789" />
         <service
             android:name=".vpn.DnsVpnService"
-            android:permission="android.permission.BIND_VPN_SERVICE"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:stopWithTask="false"
+            android:description="@string/vpn_service_manifest_description">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="AdShield uses a foreground service to keep the DNS/VPN connection active and show connection status in the notification bar." />
+                android:value="@string/vpn_special_use_fgs_subtype" />
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
