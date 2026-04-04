@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">Geri</string>
+    <string name="common_save">Kaydet</string>
+    <string name="common_ok">Tamam</string>
+    <string name="common_connected">Bağlı</string>
+    <string name="common_not_connected">Bağlı değil</string>
+    <string name="settings_preferences">Tercihler</string>
+    <string name="settings_speed_test">Hız testi</string>
+    <string name="settings_refer_friends">Arkadaşlarını davet et</string>
+    <string name="settings_advanced">Gelişmiş</string>
+    <string name="settings_language">Dil</string>
+    <string name="language_screen_title">Dil</string>
+    <string name="language_screen_subtitle">Tercih ettiğiniz uygulama dilini seçin</string>
+    <string name="home_start">Başlat</string>
+    <string name="home_stop">Durdur</string>
+    <string name="speed_test_title">Hız testi</string>
+    <string name="speed_test_start">Testi başlat</string>
+    <string name="speed_test_test_again">Tekrar test et</string>
+    <string name="advanced_title">Gelişmiş</string>
+    <string name="network_unavailable">İnternet kullanılamıyor</string>
+    <string name="network_restored">İnternet geri geldi</string>
+</resources>

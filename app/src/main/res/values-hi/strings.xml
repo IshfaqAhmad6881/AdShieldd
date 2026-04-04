@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">वापस</string>
+    <string name="common_save">सहेजें</string>
+    <string name="common_ok">ठीक है</string>
+    <string name="common_connected">कनेक्टेड</string>
+    <string name="common_not_connected">कनेक्ट नहीं</string>
+    <string name="settings_preferences">प्राथमिकताएं</string>
+    <string name="settings_speed_test">स्पीड टेस्ट</string>
+    <string name="settings_refer_friends">दोस्तों को आमंत्रित करें</string>
+    <string name="settings_advanced">एडवांस्ड</string>
+    <string name="settings_language">भाषा</string>
+    <string name="language_screen_title">भाषा</string>
+    <string name="language_screen_subtitle">ऐप की पसंदीदा भाषा चुनें</string>
+    <string name="home_start">शुरू करें</string>
+    <string name="home_stop">रोकें</string>
+    <string name="speed_test_title">स्पीड टेस्ट</string>
+    <string name="speed_test_start">टेस्ट शुरू करें</string>
+    <string name="speed_test_test_again">फिर से टेस्ट करें</string>
+    <string name="advanced_title">एडवांस्ड</string>
+    <string name="network_unavailable">इंटरनेट उपलब्ध नहीं है</string>
+    <string name="network_restored">इंटरनेट बहाल हो गया</string>
+</resources>

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">Zurück</string>
+    <string name="common_save">Speichern</string>
+    <string name="common_ok">OK</string>
+    <string name="common_connected">Verbunden</string>
+    <string name="common_not_connected">Nicht verbunden</string>
+    <string name="settings_preferences">Einstellungen</string>
+    <string name="settings_speed_test">Geschwindigkeitstest</string>
+    <string name="settings_refer_friends">Freunde einladen</string>
+    <string name="settings_advanced">Erweitert</string>
+    <string name="settings_language">Sprache</string>
+    <string name="language_screen_title">Sprache</string>
+    <string name="language_screen_subtitle">Wähle deine bevorzugte App-Sprache</string>
+    <string name="home_start">Starten</string>
+    <string name="home_stop">Stoppen</string>
+    <string name="speed_test_title">Geschwindigkeitstest</string>
+    <string name="speed_test_start">Test starten</string>
+    <string name="speed_test_test_again">Erneut testen</string>
+    <string name="advanced_title">Erweitert</string>
+    <string name="network_unavailable">Internet ist nicht verfügbar</string>
+    <string name="network_restored">Internet wiederhergestellt</string>
+</resources>

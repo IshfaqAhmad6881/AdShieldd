@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">رجوع</string>
+    <string name="common_save">حفظ</string>
+    <string name="common_ok">موافق</string>
+    <string name="common_connected">متصل</string>
+    <string name="common_not_connected">غير متصل</string>
+    <string name="settings_preferences">التفضيلات</string>
+    <string name="settings_speed_test">اختبار السرعة</string>
+    <string name="settings_refer_friends">دعوة الأصدقاء</string>
+    <string name="settings_advanced">متقدم</string>
+    <string name="settings_language">اللغة</string>
+    <string name="language_screen_title">اللغة</string>
+    <string name="language_screen_subtitle">اختر لغة التطبيق المفضلة</string>
+    <string name="home_start">بدء</string>
+    <string name="home_stop">إيقاف</string>
+    <string name="speed_test_title">اختبار السرعة</string>
+    <string name="speed_test_start">بدء الاختبار</string>
+    <string name="speed_test_test_again">إعادة الاختبار</string>
+    <string name="advanced_title">متقدم</string>
+    <string name="network_unavailable">الإنترنت غير متاح</string>
+    <string name="network_restored">تم استعادة الإنترنت</string>
+</resources>

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">戻る</string>
+    <string name="common_save">保存</string>
+    <string name="common_ok">OK</string>
+    <string name="common_connected">接続済み</string>
+    <string name="common_not_connected">未接続</string>
+    <string name="settings_preferences">設定</string>
+    <string name="settings_speed_test">速度テスト</string>
+    <string name="settings_refer_friends">友達を招待</string>
+    <string name="settings_advanced">詳細</string>
+    <string name="settings_language">言語</string>
+    <string name="language_screen_title">言語</string>
+    <string name="language_screen_subtitle">アプリの言語を選択してください</string>
+    <string name="home_start">開始</string>
+    <string name="home_stop">停止</string>
+    <string name="speed_test_title">速度テスト</string>
+    <string name="speed_test_start">テスト開始</string>
+    <string name="speed_test_test_again">再テスト</string>
+    <string name="advanced_title">詳細</string>
+    <string name="network_unavailable">インターネットが利用できません</string>
+    <string name="network_restored">インターネットが復旧しました</string>
+</resources>

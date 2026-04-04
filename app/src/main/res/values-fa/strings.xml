@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">بازگشت</string>
+    <string name="common_save">ذخیره</string>
+    <string name="common_ok">تایید</string>
+    <string name="common_connected">متصل</string>
+    <string name="common_not_connected">متصل نیست</string>
+    <string name="settings_preferences">تنظیمات</string>
+    <string name="settings_speed_test">تست سرعت</string>
+    <string name="settings_refer_friends">دعوت دوستان</string>
+    <string name="settings_advanced">پیشرفته</string>
+    <string name="settings_language">زبان</string>
+    <string name="language_screen_title">زبان</string>
+    <string name="language_screen_subtitle">زبان برنامه را انتخاب کنید</string>
+    <string name="home_start">شروع</string>
+    <string name="home_stop">توقف</string>
+    <string name="speed_test_title">تست سرعت</string>
+    <string name="speed_test_start">شروع تست</string>
+    <string name="speed_test_test_again">تست دوباره</string>
+    <string name="advanced_title">پیشرفته</string>
+    <string name="network_unavailable">اینترنت در دسترس نیست</string>
+    <string name="network_restored">اینترنت بازیابی شد</string>
+</resources>

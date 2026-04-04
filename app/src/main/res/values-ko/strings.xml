@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">뒤로</string>
+    <string name="common_save">저장</string>
+    <string name="common_ok">확인</string>
+    <string name="common_connected">연결됨</string>
+    <string name="common_not_connected">연결 안 됨</string>
+    <string name="settings_preferences">환경설정</string>
+    <string name="settings_speed_test">속도 테스트</string>
+    <string name="settings_refer_friends">친구 초대</string>
+    <string name="settings_advanced">고급</string>
+    <string name="settings_language">언어</string>
+    <string name="language_screen_title">언어</string>
+    <string name="language_screen_subtitle">앱 언어를 선택하세요</string>
+    <string name="home_start">시작</string>
+    <string name="home_stop">중지</string>
+    <string name="speed_test_title">속도 테스트</string>
+    <string name="speed_test_start">테스트 시작</string>
+    <string name="speed_test_test_again">다시 테스트</string>
+    <string name="advanced_title">고급</string>
+    <string name="network_unavailable">인터넷을 사용할 수 없습니다</string>
+    <string name="network_restored">인터넷이 복구되었습니다</string>
+</resources>

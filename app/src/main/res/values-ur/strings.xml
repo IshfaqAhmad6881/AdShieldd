@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">واپس</string>
+    <string name="common_save">محفوظ کریں</string>
+    <string name="common_ok">ٹھیک ہے</string>
+    <string name="common_connected">منسلک</string>
+    <string name="common_not_connected">غیر منسلک</string>
+    <string name="settings_preferences">ترجیحات</string>
+    <string name="settings_speed_test">اسپیڈ ٹیسٹ</string>
+    <string name="settings_refer_friends">دوستوں کو مدعو کریں</string>
+    <string name="settings_advanced">ایڈوانس</string>
+    <string name="settings_language">زبان</string>
+    <string name="language_screen_title">زبان</string>
+    <string name="language_screen_subtitle">ایپ کی پسندیدہ زبان منتخب کریں</string>
+    <string name="home_start">شروع کریں</string>
+    <string name="home_stop">روکیں</string>
+    <string name="speed_test_title">اسپیڈ ٹیسٹ</string>
+    <string name="speed_test_start">ٹیسٹ شروع کریں</string>
+    <string name="speed_test_test_again">دوبارہ ٹیسٹ کریں</string>
+    <string name="advanced_title">ایڈوانس</string>
+    <string name="network_unavailable">انٹرنیٹ دستیاب نہیں ہے</string>
+    <string name="network_restored">انٹرنیٹ بحال ہو گیا</string>
+</resources>
