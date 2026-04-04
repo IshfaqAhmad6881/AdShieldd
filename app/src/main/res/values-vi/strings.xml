@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">Quay lại</string>
+    <string name="common_save">Lưu</string>
+    <string name="common_ok">OK</string>
+    <string name="common_connected">Đã kết nối</string>
+    <string name="common_not_connected">Chưa kết nối</string>
+    <string name="settings_preferences">Tùy chọn</string>
+    <string name="settings_speed_test">Kiểm tra tốc độ</string>
+    <string name="settings_refer_friends">Mời bạn bè</string>
+    <string name="settings_advanced">Nâng cao</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="language_screen_title">Ngôn ngữ</string>
+    <string name="language_screen_subtitle">Chọn ngôn ngữ ứng dụng</string>
+    <string name="home_start">Bắt đầu</string>
+    <string name="home_stop">Dừng</string>
+    <string name="speed_test_title">Kiểm tra tốc độ</string>
+    <string name="speed_test_start">Bắt đầu kiểm tra</string>
+    <string name="speed_test_test_again">Kiểm tra lại</string>
+    <string name="advanced_title">Nâng cao</string>
+    <string name="network_unavailable">Không có Internet</string>
+    <string name="network_restored">Internet đã khôi phục</string>
+</resources>

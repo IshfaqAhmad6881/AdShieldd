@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">Назад</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_ok">ОК</string>
+    <string name="common_connected">Подключено</string>
+    <string name="common_not_connected">Не подключено</string>
+    <string name="settings_preferences">Настройки</string>
+    <string name="settings_speed_test">Тест скорости</string>
+    <string name="settings_refer_friends">Пригласить друзей</string>
+    <string name="settings_advanced">Расширенные</string>
+    <string name="settings_language">Язык</string>
+    <string name="language_screen_title">Язык</string>
+    <string name="language_screen_subtitle">Выберите язык приложения</string>
+    <string name="home_start">Старт</string>
+    <string name="home_stop">Стоп</string>
+    <string name="speed_test_title">Тест скорости</string>
+    <string name="speed_test_start">Начать тест</string>
+    <string name="speed_test_test_again">Повторить тест</string>
+    <string name="advanced_title">Расширенные</string>
+    <string name="network_unavailable">Интернет недоступен</string>
+    <string name="network_restored">Интернет восстановлен</string>
+</resources>

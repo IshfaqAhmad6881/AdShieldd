@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">Terug</string>
+    <string name="common_save">Opslaan</string>
+    <string name="common_ok">OK</string>
+    <string name="common_connected">Verbonden</string>
+    <string name="common_not_connected">Niet verbonden</string>
+    <string name="settings_preferences">Voorkeuren</string>
+    <string name="settings_speed_test">Snelheidstest</string>
+    <string name="settings_refer_friends">Vrienden uitnodigen</string>
+    <string name="settings_advanced">Geavanceerd</string>
+    <string name="settings_language">Taal</string>
+    <string name="language_screen_title">Taal</string>
+    <string name="language_screen_subtitle">Kies je voorkeurstaal voor de app</string>
+    <string name="home_start">Start</string>
+    <string name="home_stop">Stop</string>
+    <string name="speed_test_title">Snelheidstest</string>
+    <string name="speed_test_start">Test starten</string>
+    <string name="speed_test_test_again">Opnieuw testen</string>
+    <string name="advanced_title">Geavanceerd</string>
+    <string name="network_unavailable">Internet is niet beschikbaar</string>
+    <string name="network_restored">Internet hersteld</string>
+</resources>

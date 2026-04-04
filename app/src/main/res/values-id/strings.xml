@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AdShield</string>
+    <string name="common_back">Kembali</string>
+    <string name="common_save">Simpan</string>
+    <string name="common_ok">OK</string>
+    <string name="common_connected">Terhubung</string>
+    <string name="common_not_connected">Tidak terhubung</string>
+    <string name="settings_preferences">Preferensi</string>
+    <string name="settings_speed_test">Tes kecepatan</string>
+    <string name="settings_refer_friends">Undang teman</string>
+    <string name="settings_advanced">Lanjutan</string>
+    <string name="settings_language">Bahasa</string>
+    <string name="language_screen_title">Bahasa</string>
+    <string name="language_screen_subtitle">Pilih bahasa aplikasi</string>
+    <string name="home_start">Mulai</string>
+    <string name="home_stop">Berhenti</string>
+    <string name="speed_test_title">Tes kecepatan</string>
+    <string name="speed_test_start">Mulai tes</string>
+    <string name="speed_test_test_again">Tes lagi</string>
+    <string name="advanced_title">Lanjutan</string>
+    <string name="network_unavailable">Internet tidak tersedia</string>
+    <string name="network_restored">Internet dipulihkan</string>
+</resources>
