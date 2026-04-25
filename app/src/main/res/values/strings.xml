@@ -36,7 +36,11 @@
     <string name="home_go_premium">Go Premium</string>
     <string name="home_download">Download</string>
     <string name="home_upload">Upload</string>
-    <string name="home_reward_watch_ad">Reward - Watch ad, get +30 min</string>
+    <string name="home_reward_watch_ad">Reward: watch a video for +30 minutes</string>
+    <string name="rewarded_bonus_not_ready_toast">Almost ready — please wait a few seconds, then try again.</string>
+    <string name="rewarded_ad_not_ready_toast">Almost ready — please wait a few seconds, then tap Connect.</string>
+    <string name="connect_reward_gate_message">Preparing ad…</string>
+    <string name="rewarded_ad_show_failed_toast">Something went wrong. Please try again in a moment.</string>
     <string name="home_time_left">Time left: %1$s</string>
     <string name="home_start">Start</string>
     <string name="home_stop">Stop</string>
@@ -61,24 +65,24 @@
     <string name="settings_expire">Expire</string>
     <string name="settings_remaining">Remaining</string>
     <string name="settings_feedback">Feedback</string>
-    <string name="settings_feedback_caption">Tell us what we can improve</string>
+    <string name="settings_feedback_caption">Share suggestions or report issues</string>
 
     <string name="feedback_title">Send feedback</string>
     <string name="feedback_subtitle">We read every message</string>
     <string name="feedback_hint">Describe your idea, issue, or question…</string>
     <string name="feedback_send">Send via email</string>
-    <!-- Bracket prefix + keywords so Gmail filter (e.g. “AdShield”) is easy to set. -->
-    <string name="feedback_email_subject">[AdShield · Support] User feedback — please read — filter lagana asaan</string>
-    <!-- Shown at top of email so providers see transactional/support context (not marketing). -->
-    <string name="feedback_email_body_preamble">Message type: app feedback (please keep in Primary / Important)\nApp: AdShield | Version %1$s\nDevice: %2$s | Android %3$s\n—\n</string>
+    <!-- Subject prefix helps users filter support mail in their inbox. -->
+    <string name="feedback_email_subject">[AdShield Support] Feedback</string>
+    <!-- Prepended to the message body for support triage. -->
+    <string name="feedback_email_body_preamble">Support request — AdShield\nApp version: %1$s\nDevice: %2$s\nAndroid: %3$s\n---\n</string>
     <string name="feedback_chooser_title">Send email</string>
     <string name="feedback_empty">Please write your feedback first. Empty messages cannot be sent.</string>
     <string name="feedback_send_validation_title">Cannot send</string>
     <string name="feedback_min_chars_message">Please write at least %1$d characters before sending. You currently have %2$d characters.</string>
     <string name="feedback_no_email_app">No email app found</string>
     <string name="feedback_thank_you_title">Thank you!</string>
-    <string name="feedback_thank_you_message">Thanks! Important: in the mail app, check that To is %1$s, then tap Send. Until you press Send, we do not receive anything. We read every message that arrives.</string>
-    <string name="feedback_opened_mail_app">Mail app opened — To should be %1$s. Tap Send to deliver your feedback.</string>
+    <string name="feedback_thank_you_message">Thank you. In your email app, confirm the recipient is %1$s, then tap Send. Your message is delivered only after you send it. We read every message we receive.</string>
+    <string name="feedback_opened_mail_app">Your email app should open with the recipient set to %1$s. Tap Send to submit your feedback.</string>
     <string name="feedback_thank_you_ok">OK</string>
     <string name="feedback_support_email">developertesting141@gmail.com</string>
 
@@ -110,14 +114,14 @@
     <string name="speed_test_history">History</string>
     <string name="speed_test_connecting">Connecting</string>
     <string name="speed_test_preparing">Preparing test…</string>
-    <string name="speed_test_testing_connection">Testing your connection...</string>
+    <string name="speed_test_testing_connection">Testing your connection…</string>
     <string name="speed_test_testing_dns">TESTING DNS SERVERS...</string>
     <string name="speed_test_dns_benchmark">Public DNS servers — real latency (UDP)</string>
     <string name="speed_test_start">Start Test</string>
     <string name="speed_test_test_again">Test Again</string>
     <string name="speed_test_needle">Speed Needle</string>
     <string name="speed_test_active">Active</string>
-    <string name="speed_test_use_it">Use It</string>
+    <string name="speed_test_use_it">Use this</string>
 
     <string name="advanced_title">Advanced</string>
     <string name="advanced_subtitle">Live network diagnostics</string>
@@ -179,7 +183,7 @@
     <string name="premium_hero_line_monthly">Monthly · %1$s</string>
     <string name="common_bullet">•</string>
     <string name="premium_upgrade">Upgrade</string>
-    <string name="premium_yearly_subline">Rs 41.58 / month</string>
+    <string name="premium_yearly_subline">Estimated monthly cost when billed annually (see Google Play for your price)</string>
     <string name="premium_best_value">BEST VALUE</string>
     <string name="premium_features">Pro features</string>
     <string name="premium_no_ads">No Ads</string>
@@ -187,7 +191,7 @@
     <string name="premium_vip_support">VIP support</string>
     <string name="premium_vip_support_subtitle">24/7 priority customer support</string>
     <string name="premium_try_free">Try free for 3 days</string>
-    <string name="premium_after_trial">Then Rs 499 / year. Cancel anytime.</string>
+    <string name="premium_after_trial">Then billed yearly at Google Play price. Cancel anytime.</string>
     <string name="premium_cancel_anytime">Cancel anytime</string>
     <string name="premium_restore_purchase">Restore purchase</string>
     <string name="premium_legal">Subscriptions are billed by Google Play. They renew automatically until you cancel in Play Store → Payments &amp; subscriptions. Trials and pricing are shown before you confirm purchase.</string>
@@ -201,7 +205,7 @@
     <string name="premium_already_subtitle">Thanks for supporting AdShield. Ads and limits for subscribers are removed where applicable.</string>
     <string name="premium_restore_none">No active subscription found for this Google account.</string>
     <string name="premium_restore_failed">Could not restore purchases.</string>
-    <string name="premium_console_hint">Create subscription products with IDs «premium_monthly» and «premium_annual» in Play Console to see live prices.</string>
+    <string name="premium_console_hint">In Google Play Console, create subscription products with the product IDs premium_monthly and premium_annual to show live prices.</string>
 
     <!-- Shown in system UI / Play; keep in sync with DnsVpnService + Play Console special-use declaration -->
     <!-- Play: separate from generic Terms — required prominent disclosure for VpnService (User Data policy). -->
@@ -214,9 +218,8 @@
     <string name="vpn_special_use_fgs_subtype" translatable="false">AdShield runs a short-lived local VPN tunnel for DNS only. A foreground service is required so blocking stays active when the app is in the background. An ongoing notification shows connection status as required by Android; the user should disconnect inside the app before expecting the tunnel to stop.</string>
     <string name="vpn_notification_channel_name">Connection status</string>
     <string name="vpn_notification_channel_description">Required while connected: Android needs this ongoing notification so DNS protection can keep running in the background. You should disconnect in the app before clearing it. Expand the notification for details.</string>
-    <string name="vpn_notification_title">AdShield — Connected</string>
-    <string name="vpn_notification_text">%1$s • Protection active in background. Tap to open. Disconnect in app to stop.</string>
-    <string name="vpn_notification_big_text">Server: %1$s. AdShield is connected. This notification stays visible while protection runs so Android can keep the service in the background (like other VPN apps). You normally should not dismiss it until you tap Disconnect in the app—otherwise DNS blocking may stop. If your phone allows swiping it away, disconnect first.</string>
+    <string name="vpn_notification_title">Connected</string>
+    <string name="vpn_notification_text"></string>
     <string name="notification_permission_rationale_title">Background connection</string>
     <string name="notification_permission_rationale_message">When you connect, AdShield needs permission to show notifications. Android uses this for the ongoing status you see while protection runs in the background. That notice explains you are connected and usually cannot be removed safely until you disconnect in the app.</string>
     <string name="vpn_session_name">AdShield DNS</string>

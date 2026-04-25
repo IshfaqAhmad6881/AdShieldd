@@ -56,6 +56,14 @@
         android:name="android.software.vpn"
         android:required="false" />
 
+    <!-- Phone, tablet, and large foldable: no small-screen-only restriction; large screens are supported. -->
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:anyDensity="true" />
+
     <!-- Android 11+: so Gmail / other handlers resolve for feedback (mailto:) and share intents. -->
     <queries>
         <intent>
@@ -69,6 +77,7 @@
     </queries>
 
     <application
+        android:name=".AdShieldApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -78,6 +87,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AdShield">
+        <!-- Replace android:value with your real AdMob App ID before production (Play Console / AdMob). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7882326227440171~1048114789" />
@@ -99,6 +109,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:resizeableActivity="true"
             android:theme="@style/Theme.AdShield.Launch">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
